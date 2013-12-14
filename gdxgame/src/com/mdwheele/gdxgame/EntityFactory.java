@@ -6,17 +6,16 @@ import com.badlogic.gdx.physics.box2d.Body;
 import com.badlogic.gdx.physics.box2d.BodyDef;
 import com.badlogic.gdx.physics.box2d.BodyDef.BodyType;
 import com.badlogic.gdx.physics.box2d.PolygonShape;
-import com.mdwheele.gdxgame.components.Render;
-import com.mdwheele.gdxgame.components.Spatial;
+import com.mdwheele.gdxgame.components.AspectComponent;
+import com.mdwheele.gdxgame.components.SpatialComponent;
 
 public class EntityFactory {	
 	
 	public static Entity createPlayer(World world, com.badlogic.gdx.physics.box2d.World physicsWorld, float x, float y) {
 		Entity e = world.createEntity();
 		
-		Render render = new Render(x, y);
-		e.addComponent(render);
-		
+		AspectComponent render = new AspectComponent();
+		e.addComponent(render);		
 				
 		BodyDef bodyDef = new BodyDef();
 		bodyDef.type = BodyType.DynamicBody;
@@ -31,7 +30,7 @@ public class EntityFactory {
 		body.createFixture(boxShape, 0.0f);
 		
 		
-		Spatial spatial = new Spatial(x, y, body);
+		SpatialComponent spatial = new SpatialComponent(x, y, body);
 		e.addComponent(spatial);
 		
 		return e;

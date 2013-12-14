@@ -9,7 +9,7 @@ import com.badlogic.gdx.utils.Disposable;
 
 public class SoundManager implements Disposable {	
 	public enum GameSound {
-		ARROW_SHOT("sfx/arrow.wav");
+		ARROW_SHOT("sfx/flame.wav");
 		
 		private final String fileName;
 		

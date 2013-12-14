@@ -1,22 +1,3 @@
-You go through a level and only have one minute before you die, and when you restart the level your previous characters ghost does what you did before you died.
-
-You only have one heart.  You can share it with fallen comrades to help them to safety.  There are enemies to kill you!
-
-You only have one... Item
--------------------------
-
-Levels are scattered with items that could be used to solve puzzles or fend off enemies.
-
-You can only have one item at a time.
-
-Shovel	-> Dig through level go around enemies
-Axe 	-> Chop down tree to cross gap.
-	-> Use on enemies?
-NadeGun	-> Use to shoot enemies (only one bullet though! :)
-Rope	-> Traversing hazards / gaps
-
-
-
 You only have one... FLAMETHROWER!!!
 ------------------------------------
 
@@ -26,13 +7,69 @@ Player can use the flamethrower to light the way, but there is limited fuel.  If
 
 Insert 9 more levels and a big-ass boss at the end and call EA Games.. This shit's in the bag.
 
-Jump
-Life
-Breath
-Shot, Gun
-Regret?
-Wheel
-Bomb
-Cure
+## Entities
 
-It's a platformer.  You have one choice.  Levels are 
+**Dynamic**
+Player
+Flame
+Boogiemen
+Big-ass Boss?
+
+**Traps**
+Spikes
+Spinning Saw-wheels?
+
+## Game plan
+
+- Rendering the level (2 hours)
+	- Game should accept levelPath as argument to autoload levels (command from Tiled)
+	- Level loader should load map data
+	- Level should render map. Should render debug physics areas as well.
+	- Load/create physics objects (platforms), load/create entities.
+	- Create sample level that has 2 platforms, a gap, a player spawn location, and a trigger area.
+
+- Player movement and jumping on platforms (3 hours)
+	- Component to mark the player.
+		- Orientation? {FacingLeft, FacingRight}
+		- State {Running, Jumping, Shooting, Idle}
+	- System to render player on screen.
+	- System for catching key events and moving player.
+		- Use EventManager
+		- Create KeyPressedEvent
+		- Needs physics body to scoot with (forever, this will take.)
+
+- Collision Handling (3 hours)
+	- Physics system issues CollisionEvents when collisions happen in the world.
+		- Create collision event
+			- colliding entities
+			- when?
+	- ScriptComponents that handle events that are published
+		- ScriptComponent is a bag of scripts? 		
+
+- Flamethrower Effect (3 hours)
+	- Has a lifetime
+		- Lifetime component?
+	- Floats
+		- AntigravityComponent {strength, fluctuation (sin wave 0..1f)}
+	- Shitty graphic
+	- Particle effect? If time.
+
+- Boogie-men (3 hours)
+	- Spawn when a player moves within a "Spawn Range" (easy to edit) TriggerEntities?
+	- AI {CHASE, ONFIRESHIT}
+		- Chase is something like 0.5d + x (move fast when far away, slow down when closer)
+		- On fire shit is erratic movement
+	- Floating through level
+		- They don't participate in gravity? AntiGravity Component, zero flux.
+		- Sensors
+	- Blinking eyes
+		- Just turn them off and on periodically.
+
+- Art
+	- Inkscape vector
+
+- SFX
+	sfxr.exe
+
+- Music
+	http://www.earslap.com/projectslab/circuli ???
