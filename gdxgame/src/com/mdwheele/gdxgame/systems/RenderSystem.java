@@ -5,20 +5,24 @@ import com.artemis.ComponentMapper;
 import com.artemis.Entity;
 import com.artemis.annotations.Mapper;
 import com.artemis.systems.EntityProcessingSystem;
+import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.OrthographicCamera;
 import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
+import com.badlogic.gdx.graphics.glutils.ShapeRenderer.ShapeType;
 import com.mdwheele.gdxgame.components.AspectComponent;
+import com.mdwheele.gdxgame.components.SpatialComponent;
 
 public class RenderSystem extends EntityProcessingSystem {
-	@Mapper ComponentMapper<AspectComponent> rm;
+	@Mapper ComponentMapper<SpatialComponent> sm;
 	
 	private OrthographicCamera camera;
 	private ShapeRenderer debugRenderer;
 	
 	public RenderSystem(OrthographicCamera camera) {
-		super(Aspect.getAspectForAll(AspectComponent.class));
+		super(Aspect.getAspectForAll(SpatialComponent.class));
 		
-		this.camera = camera;		
+		this.camera = camera;
+		debugRenderer = new ShapeRenderer();
 	}
 
 	@Override

@@ -8,18 +8,23 @@ public class SpatialComponent extends Component {
 	private Vector2 position = new Vector2();
 	private Body physicsBody = null;
 	
-	public SpatialComponent(Vector2 pos) { this(pos.x, pos.y, null); }
-	public SpatialComponent(float x, float y, Body body){
-		this.position.x = x;
-		this.position.y = y;
+	private float maxVelocity;
+	
+	public SpatialComponent(Vector2 position, Body body){
+		this.position = position;
 		this.physicsBody = body;
+		this.maxVelocity = 2f;		
 	}
 	
-	public Vector2 getPosition() {
+	public Vector2 position() {
 		return position;
 	}
 	
-	public Body getBody() {
+	public Body body() {
 		return physicsBody;
+	}
+	
+	public float maxVelocity() {
+		return maxVelocity;
 	}
 }

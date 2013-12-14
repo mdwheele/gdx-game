@@ -1,5 +1,10 @@
 package com.mdwheele.gdxgame.screens;
 
+import com.artemis.managers.GroupManager;
+import com.artemis.managers.TagManager;
+import com.badlogic.gdx.Gdx;
+import com.badlogic.gdx.graphics.g2d.BitmapFont;
+import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
 import com.badlogic.gdx.maps.tiled.TiledMap;
 import com.badlogic.gdx.maps.tiled.renderers.OrthogonalTiledMapRenderer;
 import com.badlogic.gdx.math.Vector2;
@@ -10,6 +15,7 @@ import com.mdwheele.gdxgame.GdxGame;
 import com.mdwheele.gdxgame.events.InputActionEvent;
 import com.mdwheele.gdxgame.input.InputAction;
 import com.mdwheele.gdxgame.services.SoundManager.GameSound;
+import com.mdwheele.gdxgame.systems.PlayerInputSystem;
 import com.mdwheele.gdxgame.systems.RenderSystem;
 
 public class GameScreen extends AbstractScreen {
@@ -19,6 +25,8 @@ public class GameScreen extends AbstractScreen {
 	com.artemis.World entityWorld;
 	World physicsWorld;	
 	Box2DDebugRenderer box2dRenderer;
+	BitmapFont debugFont;
+	ShapeRenderer debugRenderer;
 	
 	GameLevel level;
 	
@@ -28,8 +36,11 @@ public class GameScreen extends AbstractScreen {
 		/**
 		 * Create Artemis World
 		 */
-		entityWorld = new com.artemis.World();		
+		entityWorld = new com.artemis.World();	
+		entityWorld.setManager(new TagManager());	
+		entityWorld.setManager(new GroupManager());
 		entityWorld.setSystem(new RenderSystem(this.camera));
+		entityWorld.setSystem(new PlayerInputSystem(eventManager));
 		entityWorld.initialize();
 		
 		/**
@@ -49,12 +60,13 @@ public class GameScreen extends AbstractScreen {
 		 * Create debug renderer for Box2d
 		 */
 		box2dRenderer = new Box2DDebugRenderer();	
+		debugFont = new BitmapFont();
+		debugRenderer = new ShapeRenderer();
 		
 		this.start();
 	}
 	
 	public void start() {
-
 		/**
 		 * Subscribe this class to the event manager.
 		 */
@@ -77,21 +89,12 @@ public class GameScreen extends AbstractScreen {
 		//mapRenderer.render();
 		
 		// debug
-		box2dRenderer.render(physicsWorld, camera.combined);
+		box2dRenderer.render(physicsWorld, camera.combined);        
 	}
 		
 	public void handleEvent(InputActionEvent event) {
-		/**
-		 * Play the sound!
-		 */
-		if(event.action() == InputAction.MOVE_UP)
-			soundManager.play(GameSound.FLAME_SHOT, 0.5f);
-		
-		if(event.action() == InputAction.MOVE_LEFT || event.action() == InputAction.MOVE_RIGHT)
-			soundManager.play(GameSound.FLAME_SHOT, 0.5f);
-		
-		if(event.action() == InputAction.MOVE_DOWN)
-			soundManager.play(GameSound.FLAME_SHOT, 0.1f);
+		if(event.action() == InputAction.QUIT)
+			Gdx.app.exit();
 	}
 
 	@Override

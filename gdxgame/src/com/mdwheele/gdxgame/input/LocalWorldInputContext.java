@@ -11,6 +11,7 @@ public class LocalWorldInputContext extends InputContext {
 		setBinding(InputAction.MOVE_UP, Keys.W, Keys.UP);
 		setBinding(InputAction.MOVE_RIGHT, Keys.D, Keys.RIGHT);
 		setBinding(InputAction.MOVE_DOWN, Keys.S, Keys.DOWN);
+		setBinding(InputAction.QUIT, Keys.ESCAPE);
 	}
 		
 	public void setBinding(InputAction action, int... keys) {
@@ -25,14 +26,16 @@ public class LocalWorldInputContext extends InputContext {
 
 	@Override
 	public boolean keyDown(int keycode) {
+		if(keyBindings.containsKey(keycode))
+			mappedActions.add(keyBindings.get(keycode));		
+
 		return false;
 	}
 
 	@Override
 	public boolean keyUp(int keycode) {
-		if(keyBindings.containsKey(keycode))
-			mappedActions.add(keyBindings.get(keycode));		
-
+		mappedActions.add(InputAction.STOP);
+		
 		return false;
 	}
 

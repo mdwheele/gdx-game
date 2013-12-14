@@ -13,8 +13,8 @@
   <object x="352" y="352" width="928" height="32"/>
  </objectgroup>
  <objectgroup name="entities" width="40" height="15">
-  <object name="Player" type="Spawn" x="99" y="238" width="32" height="32"/>
-  <object name="Trigger" type="Entity" x="293" y="378" width="53" height="33">
+  <object name="Player" x="95" y="144" width="32" height="32"/>
+  <object name="Trigger" x="293" y="378" width="53" height="33">
    <properties>
     <property name="Message" value="You fell!"/>
    </properties>

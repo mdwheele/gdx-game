@@ -1,5 +1,7 @@
 package com.mdwheele.gdxgame;
 
+import org.lwjgl.input.Keyboard;
+
 import com.badlogic.gdx.backends.lwjgl.LwjglApplication;
 import com.badlogic.gdx.backends.lwjgl.LwjglApplicationConfiguration;
 
@@ -12,5 +14,7 @@ public class Main {
 		cfg.height = 480;
 		
 		new LwjglApplication(new GdxGame(cfg.width, cfg.height), cfg);
+
+		Keyboard.enableRepeatEvents(true);
 	}
 }

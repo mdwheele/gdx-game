@@ -2,10 +2,11 @@ package com.mdwheele.gdxgame;
 
 import java.util.Iterator;
 
-import com.badlogic.gdx.maps.Map;
+import com.artemis.Entity;
 import com.badlogic.gdx.maps.MapLayer;
 import com.badlogic.gdx.maps.MapObject;
 import com.badlogic.gdx.maps.MapObjects;
+import com.badlogic.gdx.maps.MapProperties;
 import com.badlogic.gdx.maps.objects.PolygonMapObject;
 import com.badlogic.gdx.maps.objects.PolylineMapObject;
 import com.badlogic.gdx.maps.objects.RectangleMapObject;
@@ -40,6 +41,7 @@ public class GameLevel implements Disposable {
 	public GameLevel(World physicsWorld, com.artemis.World entityWorld, float unitsPerPixel) {
 		/* Set up logger interface */
 		logger = new Logger("LevelLoader");
+		logger.setLevel(Logger.DEBUG);
 		logger.info("Initializing...");
 		
 		this.map = null;
@@ -56,7 +58,8 @@ public class GameLevel implements Disposable {
 		
 	public TiledMap loadFromFile(String fileName) {
 		this.map = new TmxMapLoader().load(fileName);		
-		this.loadPhysicsFromMapLayer("physics");
+		this.loadPhysicsFromLayer("physics");
+		this.loadEntitiesFromLayer("entities");
 		
 		return this.map;
 	}
@@ -64,9 +67,9 @@ public class GameLevel implements Disposable {
 	/** 
 	 * @param layerName name of the layer that contains physics shapes.
 	 */
-	private void loadPhysicsFromMapLayer(String layerName) {
+	private void loadPhysicsFromLayer(String layerName) {
 		if (map == null) {
-			logger.error("Map does not exist.");
+			logger.error("Map was not loaded properly.");
 			return;
 		}
 		
@@ -166,6 +169,49 @@ public class GameLevel implements Disposable {
 		ChainShape chain = new ChainShape(); 
 		chain.createChain(worldVertices);
 		return chain;
+	}
+	
+	private void loadEntitiesFromLayer(String layerName) {
+		if (map == null) {
+			logger.error("Map was not loaded properly.");
+			return;
+		}
+		
+		MapLayer layer = map.getLayers().get(layerName);
+		
+		if (layer == null) {
+			logger.error("Layer " + layerName + " does not exist.");
+			return;
+		}
+		
+		MapObjects objects = layer.getObjects();
+		Iterator<MapObject> objectIterator = objects.iterator();
+		
+		while(objectIterator.hasNext()) {
+			MapObject object = objectIterator.next();
+			
+			if (object instanceof RectangleMapObject) {
+				RectangleMapObject entity = (RectangleMapObject) object;
+				
+				// Get Position
+				Vector2 position = new Vector2(entity.getRectangle().x, entity.getRectangle().y);
+				
+				// Get Properties
+				MapProperties properties = entity.getProperties();
+				
+				// Create entity at position X,Y with properties P	
+				Entity e = EntityFactory.create(entity.getName(), entityWorld, physicsWorld, position, properties);
+				
+				if(e != null) {
+					e.addToWorld();
+					logger.info( String.format("Spawned '%s' at position %s", entity.getName(), position) );
+				}
+			}
+			else {
+				logger.error("Non-supported shape " + object);
+				continue;
+			}
+		}
 	}
 
 	@Override
