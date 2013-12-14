@@ -10,6 +10,8 @@ import com.badlogic.gdx.maps.objects.PolygonMapObject;
 import com.badlogic.gdx.maps.objects.PolylineMapObject;
 import com.badlogic.gdx.maps.objects.RectangleMapObject;
 import com.badlogic.gdx.maps.objects.TextureMapObject;
+import com.badlogic.gdx.maps.tiled.TiledMap;
+import com.badlogic.gdx.maps.tiled.TmxMapLoader;
 import com.badlogic.gdx.math.Rectangle;
 import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.physics.box2d.Body;
@@ -20,29 +22,29 @@ import com.badlogic.gdx.physics.box2d.PolygonShape;
 import com.badlogic.gdx.physics.box2d.Shape;
 import com.badlogic.gdx.physics.box2d.World;
 import com.badlogic.gdx.utils.Array;
+import com.badlogic.gdx.utils.Disposable;
 import com.badlogic.gdx.utils.Logger;
 
-public class LevelLoader {
+public class GameLevel implements Disposable {
 
 	private Logger logger;
-	private Map map;
+	private TiledMap map;
 	private World physicsWorld;
+	private com.artemis.World entityWorld;
+	
 	private float unitsPerPixel;
 	private Array<Body> bodies = new Array<Body>();
 	
 	private FixtureDef defaultFixture;
 	
-	/** 
-	 * @param world Box2d physics world to work in.
-	 * @param unitsPerPixel conversion from pixel units to Box2d.
-	 */
-	public LevelLoader(Map map, World world, float unitsPerPixel) {
+	public GameLevel(World physicsWorld, com.artemis.World entityWorld, float unitsPerPixel) {
 		/* Set up logger interface */
 		logger = new Logger("LevelLoader");
 		logger.info("Initializing...");
 		
-		this.map = map;
-		this.physicsWorld = world;
+		this.map = null;
+		this.physicsWorld = physicsWorld;
+		this.entityWorld = entityWorld;
 		this.unitsPerPixel = unitsPerPixel;
 		
 		/* Set default fixture property definition */
@@ -52,14 +54,22 @@ public class LevelLoader {
 		defaultFixture.restitution = 0.0f;
 	}
 		
-	public void createPhysics() {
-		createPhysics("physics");
+	public TiledMap loadFromFile(String fileName) {
+		this.map = new TmxMapLoader().load(fileName);		
+		this.loadPhysicsFromMapLayer("physics");
+		
+		return this.map;
 	}
 	
 	/** 
 	 * @param layerName name of the layer that contains physics shapes.
 	 */
-	public void createPhysics(String layerName) {
+	private void loadPhysicsFromMapLayer(String layerName) {
+		if (map == null) {
+			logger.error("Map does not exist.");
+			return;
+		}
+		
 		MapLayer layer = map.getLayers().get(layerName);
 		
 		if (layer == null) {
@@ -110,7 +120,7 @@ public class LevelLoader {
 		
 	}
 	
-	public void destroyPhysics() {
+	private void destroyPhysics() {
 		for (Body body : bodies) {
 			physicsWorld.destroyBody(body);
 		}
@@ -156,19 +166,10 @@ public class LevelLoader {
 		ChainShape chain = new ChainShape(); 
 		chain.createChain(worldVertices);
 		return chain;
-	}	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
+	}
+
+	@Override
+	public void dispose() {
+		this.destroyPhysics();
+	}		
 }

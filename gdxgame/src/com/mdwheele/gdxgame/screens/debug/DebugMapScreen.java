@@ -22,6 +22,8 @@ public class DebugMapScreen extends AbstractScreen {
 	public void render(float delta) {
 		super.render(delta);
 				
+	
+		
 		mapRenderer.setView(this.camera);
 		mapRenderer.render();
 	}

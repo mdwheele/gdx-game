@@ -56,13 +56,13 @@ public class DebugEventSoundScreen extends AbstractScreen {
 		 * Play the sound!
 		 */
 		if(event.action() == InputAction.MOVE_UP)
-			soundManager.play(GameSound.ARROW_SHOT);
+			soundManager.play(GameSound.FLAME_SHOT);
 		
 		if(event.action() == InputAction.MOVE_LEFT || event.action() == InputAction.MOVE_RIGHT)
-			soundManager.play(GameSound.ARROW_SHOT, 0.5f);
+			soundManager.play(GameSound.FLAME_SHOT, 0.5f);
 		
 		if(event.action() == InputAction.MOVE_DOWN)
-			soundManager.play(GameSound.ARROW_SHOT, 0.1f);
+			soundManager.play(GameSound.FLAME_SHOT, 0.1f);
 	}
 
 	@Override
