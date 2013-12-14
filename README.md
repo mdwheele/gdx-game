@@ -67,6 +67,9 @@ Spinning Saw-wheels?
 
 - Art
 	- Inkscape vector
+	- Tilesets for map
+	- Particle effects for flame
+	- all 16bit-esque artwork
 
 - SFX
 	sfxr.exe
