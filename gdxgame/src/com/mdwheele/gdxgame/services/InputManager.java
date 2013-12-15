@@ -1,6 +1,5 @@
 package com.mdwheele.gdxgame.services;
 
-import com.badlogic.gdx.Gdx;
 import com.mdwheele.gdxgame.events.InputActionEvent;
 import com.mdwheele.gdxgame.input.InputAction;
 import com.mdwheele.gdxgame.input.InputContext;
@@ -15,10 +14,11 @@ public class InputManager {
 	
 	public void setContext(InputContext context) {
 		activeContext = context;		
-		Gdx.input.setInputProcessor(activeContext);	
 	}
 	
 	public void process() {
+		activeContext.process();
+		
 		for(InputAction action: activeContext.getMappedActions()) {
 			eventManager.post(new InputActionEvent(action));
 		}

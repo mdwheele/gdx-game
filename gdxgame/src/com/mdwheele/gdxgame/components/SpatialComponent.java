@@ -10,10 +10,10 @@ public class SpatialComponent extends Component {
 	
 	private float maxVelocity;
 	
-	public SpatialComponent(Vector2 position, Body body){
+	public SpatialComponent(Vector2 position, Body body, float maxVelocity){
 		this.position = position;
 		this.physicsBody = body;
-		this.maxVelocity = 2f;		
+		this.maxVelocity = maxVelocity;		
 	}
 	
 	public Vector2 position() {

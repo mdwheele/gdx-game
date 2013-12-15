@@ -11,61 +11,8 @@ public class LocalWorldInputContext extends InputContext {
 		setBinding(InputAction.MOVE_UP, Keys.W, Keys.UP);
 		setBinding(InputAction.MOVE_RIGHT, Keys.D, Keys.RIGHT);
 		setBinding(InputAction.MOVE_DOWN, Keys.S, Keys.DOWN);
+		setBinding(InputAction.JUMP, Keys.SPACE);
+		setBinding(InputAction.ATTACK, Keys.SHIFT_LEFT, Keys.SHIFT_RIGHT);
 		setBinding(InputAction.QUIT, Keys.ESCAPE);
-	}
-		
-	public void setBinding(InputAction action, int... keys) {
-		for(int key: keys) {
-			keyBindings.put(key, action);
-		}
-	}
-	
-	public InputAction getBinding(Keys key) {		
-		return keyBindings.get(key);
-	}
-
-	@Override
-	public boolean keyDown(int keycode) {
-		if(keyBindings.containsKey(keycode))
-			mappedActions.add(keyBindings.get(keycode));		
-
-		return false;
-	}
-
-	@Override
-	public boolean keyUp(int keycode) {
-		mappedActions.add(InputAction.STOP);
-		
-		return false;
-	}
-
-	@Override
-	public boolean keyTyped(char character) {
-		return false;
-	}
-
-	@Override
-	public boolean touchDown(int screenX, int screenY, int pointer, int button) {
-		return false;
-	}
-
-	@Override
-	public boolean touchUp(int screenX, int screenY, int pointer, int button) {
-		return false;
-	}
-
-	@Override
-	public boolean touchDragged(int screenX, int screenY, int pointer) {
-		return false;
-	}
-
-	@Override
-	public boolean mouseMoved(int screenX, int screenY) {
-		return false;
-	}
-
-	@Override
-	public boolean scrolled(int amount) {
-		return false;
 	}
 }

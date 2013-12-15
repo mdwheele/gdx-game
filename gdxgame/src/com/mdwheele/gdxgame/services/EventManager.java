@@ -83,17 +83,19 @@ public class EventManager {
 		while(eventPool.isEmpty() == false) {
 			Event event = eventPool.poll();
 			
-			for (Object listener: eventListeners.get(event.getClass())) {
-				try {
-					Method method = listener.getClass().getMethod("handleEvent", event.getClass());
-					
+			if(eventListeners.containsKey(event.getClass())) {
+				for (Object listener: eventListeners.get(event.getClass())) {
 					try {
-						method.invoke(listener, event);
+						Method method = listener.getClass().getMethod("handleEvent", event.getClass());
+						
+						try {
+							method.invoke(listener, event);
+						}
+						catch (InvocationTargetException e) {}
+						catch (IllegalAccessException e) {}
 					}
-					catch (InvocationTargetException e) {}
-					catch (IllegalAccessException e) {}
+					catch (NoSuchMethodException e) {}
 				}
-				catch (NoSuchMethodException e) {}
 			}
 		}
 	}

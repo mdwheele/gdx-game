@@ -193,18 +193,24 @@ public class GameLevel implements Disposable {
 			if (object instanceof RectangleMapObject) {
 				RectangleMapObject entity = (RectangleMapObject) object;
 				
-				// Get Position
-				Vector2 position = new Vector2(entity.getRectangle().x, entity.getRectangle().y);
+				// Get Bounds
+				Vector2 position = new Vector2();
+				Vector2 size = new Vector2();
+
+				position = entity.getRectangle().getCenter(position).scl(1/32f);
+				size = entity.getRectangle().getSize(size).scl(1/64f);
 				
+				Rectangle bounds = new Rectangle(position.x, position.y, size.x, size.y);
+								
 				// Get Properties
 				MapProperties properties = entity.getProperties();
 				
 				// Create entity at position X,Y with properties P	
-				Entity e = EntityFactory.create(entity.getName(), entityWorld, physicsWorld, position, properties);
+				Entity e = EntityFactory.create(entity.getName(), entityWorld, physicsWorld, bounds, properties);
 				
 				if(e != null) {
 					e.addToWorld();
-					logger.info( String.format("Spawned '%s' at position %s", entity.getName(), position) );
+					logger.info( String.format("Spawned '%s' at position %s", entity.getName(), bounds) );
 				}
 			}
 			else {

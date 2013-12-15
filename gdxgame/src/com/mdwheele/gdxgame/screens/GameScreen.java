@@ -14,9 +14,12 @@ import com.mdwheele.gdxgame.GameLevel;
 import com.mdwheele.gdxgame.GdxGame;
 import com.mdwheele.gdxgame.events.InputActionEvent;
 import com.mdwheele.gdxgame.input.InputAction;
-import com.mdwheele.gdxgame.services.SoundManager.GameSound;
+import com.mdwheele.gdxgame.systems.CollisionSystem;
+import com.mdwheele.gdxgame.systems.FlameThrowerSystem;
+import com.mdwheele.gdxgame.systems.LifetimeSystem;
 import com.mdwheele.gdxgame.systems.PlayerInputSystem;
 import com.mdwheele.gdxgame.systems.RenderSystem;
+import com.mdwheele.gdxgame.systems.ScriptSystem;
 
 public class GameScreen extends AbstractScreen {
 	
@@ -32,6 +35,10 @@ public class GameScreen extends AbstractScreen {
 	
 	public GameScreen(final GdxGame game, String levelPath) {
 		super(game);
+		/**
+		 * Create Box2d World
+		 */
+		physicsWorld = new World(new Vector2(0, -10), true);
 		
 		/**
 		 * Create Artemis World
@@ -39,14 +46,22 @@ public class GameScreen extends AbstractScreen {
 		entityWorld = new com.artemis.World();	
 		entityWorld.setManager(new TagManager());	
 		entityWorld.setManager(new GroupManager());
+		
 		entityWorld.setSystem(new RenderSystem(this.camera));
-		entityWorld.setSystem(new PlayerInputSystem(eventManager));
-		entityWorld.initialize();
+		entityWorld.setSystem(new PlayerInputSystem(eventManager, physicsWorld));
+		entityWorld.setSystem(new ScriptSystem());
 		
 		/**
-		 * Create Box2d World
+		 * Behavioral
 		 */
-		physicsWorld = new World(new Vector2(0, -10), true);
+		entityWorld.setSystem(new LifetimeSystem());
+		entityWorld.setSystem(new FlameThrowerSystem());
+		
+		CollisionSystem collisionSystem = new CollisionSystem(eventManager, physicsWorld);
+		entityWorld.setSystem(collisionSystem);
+		physicsWorld.setContactListener(collisionSystem);
+		
+		entityWorld.initialize();
 		
 		/**
 		 * Load Level
