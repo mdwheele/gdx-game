@@ -2,6 +2,7 @@ package com.mdwheele.gdxgame;
 
 import com.artemis.Entity;
 import com.artemis.World;
+import com.artemis.managers.GroupManager;
 import com.artemis.managers.TagManager;
 import com.badlogic.gdx.maps.MapProperties;
 import com.badlogic.gdx.math.Rectangle;
@@ -12,15 +13,23 @@ import com.badlogic.gdx.physics.box2d.BodyDef.BodyType;
 import com.badlogic.gdx.physics.box2d.CircleShape;
 import com.badlogic.gdx.physics.box2d.FixtureDef;
 import com.badlogic.gdx.physics.box2d.PolygonShape;
+import com.mdwheele.gdxgame.components.AntiGravityComponent;
+import com.mdwheele.gdxgame.components.AspectComponent;
+import com.mdwheele.gdxgame.components.CameraComponent;
 import com.mdwheele.gdxgame.components.FlameComponent;
 import com.mdwheele.gdxgame.components.LifetimeComponent;
 import com.mdwheele.gdxgame.components.SpatialComponent;
+import com.mdwheele.gdxgame.support.GameBodyType;
 
 public class EntityFactory {	
 	
 	public static Entity create(String type, World entityWorld, com.badlogic.gdx.physics.box2d.World physicsWorld, Rectangle bounds, MapProperties properties) {
 		if(type.equals("Player")) {
 			return EntityFactory.createPlayer(entityWorld, physicsWorld, bounds, properties);
+		}
+		
+		if(type.equals("Boogeyman")) {
+			return EntityFactory.createBoogeyman(entityWorld, physicsWorld, bounds, properties);
 		}
 		
 		if(type.equals("Trigger")) {
@@ -38,10 +47,10 @@ public class EntityFactory {
 		BodyDef def = new BodyDef();
 		def.type = BodyType.DynamicBody;
 		Body body = physicsWorld.createBody(def);
-		 
+				
 		PolygonShape poly = new PolygonShape();		
 		poly.setAsBox(0.5f, 0.5f);
-		body.createFixture(poly, 1);
+		body.createFixture(poly, 1).setUserData(GameBodyType.PLAYER);
 		poly.dispose();			
  
 		poly = new PolygonShape();		
@@ -49,10 +58,9 @@ public class EntityFactory {
 
 		FixtureDef fixture = new FixtureDef();
 		fixture.shape = poly;
-		fixture.density = 1.0f;
 		fixture.isSensor = true;
 		
-		body.createFixture(fixture);		
+		body.createFixture(fixture).setUserData(GameBodyType.PLAYER_SENSOR);		
 		poly.dispose();
 		
 		body.setBullet(true);		
@@ -62,9 +70,73 @@ public class EntityFactory {
 		
 		body.setTransform(position, 0);
 		
+		/**
+		 * Player state and orientation (for animation?)
+		 */
+		AspectComponent aspect = new AspectComponent();
+		e.addComponent(aspect);
+		
+		/**
+		 * Add spatial component (physics)
+		 */
 		SpatialComponent spatial = new SpatialComponent(position, body, 8f);
 		e.addComponent(spatial);
 
+		/**
+		 * Camera follow!
+		 */
+		CameraComponent camera = new CameraComponent();
+		e.addComponent(camera);
+		
+		body.setUserData(e);
+		
+		return e;
+	}
+	
+	public static Entity createBoogeyman(World entityWorld, com.badlogic.gdx.physics.box2d.World physicsWorld, Rectangle bounds, MapProperties properties) {
+		Entity e = entityWorld.createEntity();		
+		entityWorld.getManager(GroupManager.class).add(e, "ENEMY");
+				
+		// Create player body.
+		BodyDef def = new BodyDef();
+		def.type = BodyType.DynamicBody;
+		Body body = physicsWorld.createBody(def);
+				
+		PolygonShape poly = new PolygonShape();		
+		poly.setAsBox(0.5f, 0.5f);		
+		
+		FixtureDef fixture = new FixtureDef();
+		fixture.shape = poly;
+		fixture.isSensor = true;
+		
+		body.createFixture(fixture).setUserData(GameBodyType.ENEMY_SENSOR);		
+		poly.dispose();
+		
+		body.setBullet(true);		
+		body.setFixedRotation(true);
+		
+		Vector2 position = new Vector2(bounds.x, bounds.y);
+		
+		body.setTransform(position, 0);
+		
+		/**
+		 * Player state and orientation (for animation?)
+		 */
+		AspectComponent aspect = new AspectComponent();
+		e.addComponent(aspect);
+		
+		/**
+		 * Add spatial component (physics)
+		 */
+		SpatialComponent spatial = new SpatialComponent(position, body, 8f);
+		e.addComponent(spatial);
+		
+		/**
+		 * Floats around like a ghost so it gets this!
+		 */
+		AntiGravityComponent antigrav = new AntiGravityComponent();
+		e.addComponent(antigrav);
+		
 		body.setUserData(e);
 		
 		return e;
@@ -77,16 +149,15 @@ public class EntityFactory {
 		BodyDef def = new BodyDef();
 		def.type = BodyType.StaticBody;
 		Body body = physicsWorld.createBody(def); 
-		
+						
 		PolygonShape poly = new PolygonShape();		
 		poly.setAsBox(bounds.width, bounds.height);
 		
 		FixtureDef fixture = new FixtureDef();
 		fixture.shape = poly;
-		fixture.density = 1.0f;
 		fixture.isSensor = true;
 		
-		body.createFixture(fixture);
+		body.createFixture(fixture).setUserData(GameBodyType.TRIGGER);
 		poly.dispose();			
 
 		Vector2 position = new Vector2(bounds.x, bounds.y);
@@ -101,18 +172,23 @@ public class EntityFactory {
 		return e;
 	}
 	
-	public static Entity createFlame(World entityWorld, com.badlogic.gdx.physics.box2d.World physicsWorld, Vector2 position) {
+	public static Entity createFlame(World entityWorld, com.badlogic.gdx.physics.box2d.World physicsWorld, Vector2 position, Vector2 velocity) {
 		Entity e = entityWorld.createEntity();		
 				
 		// Create player body.
 		BodyDef def = new BodyDef();
 		def.type = BodyType.DynamicBody;
 		Body body = physicsWorld.createBody(def); 
-
+		
 		CircleShape circle = new CircleShape();		
 		circle.setRadius(0.1f);
 		circle.setPosition(new Vector2(0, -0.5f));
-		body.createFixture(circle, 0);		
+		
+		FixtureDef fixture = new FixtureDef();
+		fixture.shape = circle;
+		fixture.isSensor = true;
+		
+		body.createFixture(fixture).setUserData(GameBodyType.FLAME);
 		circle.dispose();	
 		
 		body.setTransform(position, 0);
@@ -122,14 +198,13 @@ public class EntityFactory {
 		
 		LifetimeComponent lifetime = new LifetimeComponent();
 		lifetime.counter = 0;
-		lifetime.lifetime = 20;
+		lifetime.lifetime = 20 + (int)(Math.random() * 10);
 		e.addComponent(lifetime);
 		
 		FlameComponent flame = new FlameComponent();
 		e.addComponent(flame);
 		
-		body.setLinearVelocity(5f, 1f);
-
+		body.setLinearVelocity(velocity);
 		body.setUserData(e);
 		
 		return e;

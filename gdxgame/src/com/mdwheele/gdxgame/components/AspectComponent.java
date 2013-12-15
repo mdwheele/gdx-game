@@ -1,16 +1,25 @@
 package com.mdwheele.gdxgame.components;
 
 import com.artemis.Component;
+import com.mdwheele.gdxgame.support.PlayerOrientation;
+import com.mdwheele.gdxgame.support.PlayerState;
 
 public class AspectComponent extends Component {
-	enum State { RUNNING, JUMPING, SHOOTING, IDLE };
-	enum Orientation { LEFT, RIGHT };
-	
-	State state;
-	Orientation orientation;
+	public PlayerState state;
+	public PlayerOrientation orientation;
 	
 	public AspectComponent(){
-		state = State.IDLE;
-		orientation = Orientation.RIGHT;
+		state = PlayerState.IDLE;
+		orientation = PlayerOrientation.RIGHT;
 	}
+	
+	public void setPlayerState(PlayerState state) {
+		this.state = state;		
+	}
+	
+	public void setPlayerOrientation(PlayerOrientation orientation) {
+		this.orientation = orientation;		
+	}
+	
+	public PlayerState state() { return this.state; }
 }

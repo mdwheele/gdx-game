@@ -9,6 +9,7 @@ import com.badlogic.gdx.physics.box2d.Body;
 import com.badlogic.gdx.physics.box2d.Contact;
 import com.badlogic.gdx.physics.box2d.ContactImpulse;
 import com.badlogic.gdx.physics.box2d.ContactListener;
+import com.badlogic.gdx.physics.box2d.Fixture;
 import com.badlogic.gdx.physics.box2d.Manifold;
 import com.badlogic.gdx.physics.box2d.World;
 import com.mdwheele.gdxgame.components.SpatialComponent;
@@ -28,17 +29,11 @@ public class CollisionSystem extends EntityProcessingSystem implements ContactLi
 	}
 
 	@Override
-	protected void process(Entity arg0) {		
+	protected void process(Entity e) {		
 	}
 
 	@Override
 	public void beginContact(Contact contact) {
-		Body a = contact.getFixtureA().getBody();
-		Body b = contact.getFixtureB().getBody();
-
-		if(a.getUserData() instanceof Entity && b.getUserData() instanceof Entity) {
-			eventManager.post(new CollisionEvent((Entity)a.getUserData(), (Entity)b.getUserData()));
-		}
 	}
 
 	@Override
@@ -55,6 +50,11 @@ public class CollisionSystem extends EntityProcessingSystem implements ContactLi
 	
 	@Override
 	public void removed(Entity e) {
-		physicsWorld.destroyBody(spatial.get(e).body());
+		Body body = spatial.get(e).body();
+		
+		for(Fixture f: body.getFixtureList()) {
+			body.destroyFixture(f);
+		}
+		physicsWorld.destroyBody(body);
 	}
 }

@@ -14,6 +14,8 @@ import com.mdwheele.gdxgame.GameLevel;
 import com.mdwheele.gdxgame.GdxGame;
 import com.mdwheele.gdxgame.events.InputActionEvent;
 import com.mdwheele.gdxgame.input.InputAction;
+import com.mdwheele.gdxgame.systems.AntiGravitySystem;
+import com.mdwheele.gdxgame.systems.CameraSystem;
 import com.mdwheele.gdxgame.systems.CollisionSystem;
 import com.mdwheele.gdxgame.systems.FlameThrowerSystem;
 import com.mdwheele.gdxgame.systems.LifetimeSystem;
@@ -38,7 +40,7 @@ public class GameScreen extends AbstractScreen {
 		/**
 		 * Create Box2d World
 		 */
-		physicsWorld = new World(new Vector2(0, -10), true);
+		physicsWorld = new World(new Vector2(0, -9.8f), true);
 		
 		/**
 		 * Create Artemis World
@@ -46,9 +48,11 @@ public class GameScreen extends AbstractScreen {
 		entityWorld = new com.artemis.World();	
 		entityWorld.setManager(new TagManager());	
 		entityWorld.setManager(new GroupManager());
-		
+
 		entityWorld.setSystem(new RenderSystem(this.camera));
-		entityWorld.setSystem(new PlayerInputSystem(eventManager, physicsWorld));
+		entityWorld.setSystem(new CameraSystem(this.camera));
+		PlayerInputSystem playerInputSystem = new PlayerInputSystem(eventManager, physicsWorld);
+		entityWorld.setSystem(playerInputSystem);
 		entityWorld.setSystem(new ScriptSystem());
 		
 		/**
@@ -56,10 +60,12 @@ public class GameScreen extends AbstractScreen {
 		 */
 		entityWorld.setSystem(new LifetimeSystem());
 		entityWorld.setSystem(new FlameThrowerSystem());
+		entityWorld.setSystem(new AntiGravitySystem(physicsWorld));
 		
 		CollisionSystem collisionSystem = new CollisionSystem(eventManager, physicsWorld);
 		entityWorld.setSystem(collisionSystem);
 		physicsWorld.setContactListener(collisionSystem);
+		physicsWorld.setContactListener(playerInputSystem);
 		
 		entityWorld.initialize();
 		
@@ -101,7 +107,7 @@ public class GameScreen extends AbstractScreen {
 	
 		// render map
 		mapRenderer.setView(this.camera);
-		//mapRenderer.render();
+		mapRenderer.render();
 		
 		// debug
 		box2dRenderer.render(physicsWorld, camera.combined);        

@@ -40,16 +40,18 @@ public abstract class InputContext {
 	}
 	
 	public void process() {
-		boolean anyKeyPressed = false;
+		boolean movementKeyPressed = false;
 		
 		for(Map.Entry<Integer, InputAction> binding : keyBindings.entrySet()) {
 			if(Gdx.input.isKeyPressed(binding.getKey())) {
-				mappedActions.add(binding.getValue());
-				anyKeyPressed = true;
+				mappedActions.add(binding.getValue());							
+				
+				if(binding.getValue() == InputAction.MOVE_LEFT || binding.getValue() == InputAction.MOVE_RIGHT)
+					movementKeyPressed = true;
 			}
 		}
 		
-		if(!anyKeyPressed) {
+		if(!movementKeyPressed) {
 			mappedActions.add(InputAction.STOP);
 		}
 	}

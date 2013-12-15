@@ -25,6 +25,7 @@ import com.badlogic.gdx.physics.box2d.World;
 import com.badlogic.gdx.utils.Array;
 import com.badlogic.gdx.utils.Disposable;
 import com.badlogic.gdx.utils.Logger;
+import com.mdwheele.gdxgame.support.GameBodyType;
 
 public class GameLevel implements Disposable {
 
@@ -52,7 +53,7 @@ public class GameLevel implements Disposable {
 		/* Set default fixture property definition */
 		defaultFixture = new FixtureDef();
 		defaultFixture.density = 1.0f;
-		defaultFixture.friction = 0.8f;
+		defaultFixture.friction = 0.0f;
 		defaultFixture.restitution = 0.0f;
 	}
 		
@@ -113,8 +114,8 @@ public class GameLevel implements Disposable {
 			bodyDef.type = BodyDef.BodyType.StaticBody;
 			
 			Body body = physicsWorld.createBody(bodyDef);
-			body.createFixture(fixtureDef);
-			
+			body.createFixture(fixtureDef).setUserData(GameBodyType.TERRAIN);
+						
 			bodies.add(body);
 			
 			fixtureDef.shape = null;
