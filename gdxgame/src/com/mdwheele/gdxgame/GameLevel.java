@@ -198,8 +198,8 @@ public class GameLevel implements Disposable {
 				Vector2 position = new Vector2();
 				Vector2 size = new Vector2();
 
-				position = entity.getRectangle().getCenter(position).scl(1/32f);
-				size = entity.getRectangle().getSize(size).scl(1/64f);
+				position = entity.getRectangle().getCenter(position).scl(unitsPerPixel);
+				size = entity.getRectangle().getSize(size).scl(0.5f * unitsPerPixel);
 				
 				Rectangle bounds = new Rectangle(position.x, position.y, size.x, size.y);
 								

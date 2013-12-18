@@ -31,7 +31,10 @@ public class PlayerInputSystem extends VoidEntitySystem implements ContactListen
 	
 	private Entity player;
 	private boolean playerGrounded;
-	private Body playerBody;	
+	private Body playerBody;
+	
+	private int attackRateCounter = 0;
+	private int attackRate = 1;
 	
 	public PlayerInputSystem(EventManager eventManager, World physicsWorld) {
 		eventManager.subscribe(InputActionEvent.class, this);
@@ -55,19 +58,19 @@ public class PlayerInputSystem extends VoidEntitySystem implements ContactListen
 		float maxVelocity = spatial.get(player).maxVelocity();
 				
 		if(event.action() == InputAction.MOVE_RIGHT) {
-			playerBody.applyLinearImpulse(new Vector2(maxVelocity - currentVelocity, 0), playerBody.getPosition(), true);
+			playerBody.applyLinearImpulse(new Vector2((maxVelocity - currentVelocity)  * playerBody.getMass(), 0), playerBody.getPosition(), true);
 			aspect.get(player).setPlayerState(PlayerState.RUNNING);
 			aspect.get(player).setPlayerOrientation(PlayerOrientation.RIGHT);
 		}
 		
 		if(event.action() == InputAction.MOVE_LEFT) {
-			playerBody.applyLinearImpulse(new Vector2(-(maxVelocity + currentVelocity), 0), playerBody.getPosition(), true);	
+			playerBody.applyLinearImpulse(new Vector2(-(maxVelocity + currentVelocity) * playerBody.getMass(), 0), playerBody.getPosition(), true);	
 			aspect.get(player).setPlayerState(PlayerState.RUNNING);
 			aspect.get(player).setPlayerOrientation(PlayerOrientation.LEFT);
 		}
 		
 		if(event.action() == InputAction.STOP) {
-			playerBody.applyLinearImpulse(new Vector2(-playerBody.getLinearVelocity().x, 0), playerBody.getPosition(), true);	
+			playerBody.applyLinearImpulse(new Vector2(-playerBody.getLinearVelocity().x * playerBody.getMass(), 0), playerBody.getPosition(), true);	
 			aspect.get(player).setPlayerState(PlayerState.IDLE);
 		}
 
@@ -76,8 +79,12 @@ public class PlayerInputSystem extends VoidEntitySystem implements ContactListen
 			
 			int direction = (aspect.get(player).orientation == PlayerOrientation.RIGHT) ? 1: -1;
 			
-			position.add(direction * 0.75f, 0.5f);			
-			EntityFactory.createFlame(world, physicsWorld, position, playerBody.getLinearVelocity().add(new Vector2(direction * 5f, 1f))).addToWorld();
+			position.add(direction * 0.75f, 0.5f);		
+			
+			if(attackRateCounter++ > attackRate) {
+				EntityFactory.createFlame(world, physicsWorld, position, playerBody.getLinearVelocity().add(new Vector2(direction * 40f, 1f))).addToWorld();
+				attackRateCounter = 0;
+			}
 
 			aspect.get(player).setPlayerState(PlayerState.SHOOTING);
 		}

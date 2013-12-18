@@ -1,9 +1,16 @@
 package com.mdwheele.gdxgame.screens;
 
+import box2dLight.RayHandler;
+
 import com.artemis.managers.GroupManager;
 import com.artemis.managers.TagManager;
 import com.badlogic.gdx.Gdx;
+import com.badlogic.gdx.graphics.GL10;
+import com.badlogic.gdx.graphics.GL20;
+import com.badlogic.gdx.graphics.Pixmap.Format;
 import com.badlogic.gdx.graphics.g2d.BitmapFont;
+import com.badlogic.gdx.graphics.g2d.TextureRegion;
+import com.badlogic.gdx.graphics.glutils.FrameBuffer;
 import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
 import com.badlogic.gdx.maps.tiled.TiledMap;
 import com.badlogic.gdx.maps.tiled.renderers.OrthogonalTiledMapRenderer;
@@ -19,6 +26,7 @@ import com.mdwheele.gdxgame.systems.CameraSystem;
 import com.mdwheele.gdxgame.systems.CollisionSystem;
 import com.mdwheele.gdxgame.systems.FlameThrowerSystem;
 import com.mdwheele.gdxgame.systems.LifetimeSystem;
+import com.mdwheele.gdxgame.systems.LightSystem;
 import com.mdwheele.gdxgame.systems.PlayerInputSystem;
 import com.mdwheele.gdxgame.systems.RenderSystem;
 import com.mdwheele.gdxgame.systems.ScriptSystem;
@@ -32,8 +40,13 @@ public class GameScreen extends AbstractScreen {
 	Box2DDebugRenderer box2dRenderer;
 	BitmapFont debugFont;
 	ShapeRenderer debugRenderer;
+	RayHandler rayHandler;
 	
 	GameLevel level;
+	
+	private float fboScaler = 1.5f;
+	private FrameBuffer fbo = null;
+	private TextureRegion fboRegion = null;
 	
 	public GameScreen(final GdxGame game, String levelPath) {
 		super(game);
@@ -43,17 +56,22 @@ public class GameScreen extends AbstractScreen {
 		physicsWorld = new World(new Vector2(0, -9.8f), true);
 		
 		/**
+		 * Create ray handler
+		 */
+		rayHandler = new RayHandler(physicsWorld);
+		
+		/**
 		 * Create Artemis World
 		 */
 		entityWorld = new com.artemis.World();	
 		entityWorld.setManager(new TagManager());	
 		entityWorld.setManager(new GroupManager());
 
-		entityWorld.setSystem(new RenderSystem(this.camera));
 		entityWorld.setSystem(new CameraSystem(this.camera));
 		PlayerInputSystem playerInputSystem = new PlayerInputSystem(eventManager, physicsWorld);
 		entityWorld.setSystem(playerInputSystem);
 		entityWorld.setSystem(new ScriptSystem());
+		entityWorld.setSystem(new RenderSystem(this.batch, this.camera));
 		
 		/**
 		 * Behavioral
@@ -61,6 +79,7 @@ public class GameScreen extends AbstractScreen {
 		entityWorld.setSystem(new LifetimeSystem());
 		entityWorld.setSystem(new FlameThrowerSystem());
 		entityWorld.setSystem(new AntiGravitySystem(physicsWorld));
+		entityWorld.setSystem(new LightSystem(physicsWorld, rayHandler));
 		
 		CollisionSystem collisionSystem = new CollisionSystem(eventManager, physicsWorld);
 		entityWorld.setSystem(collisionSystem);
@@ -72,17 +91,19 @@ public class GameScreen extends AbstractScreen {
 		/**
 		 * Load Level
 		 */
-		level = new GameLevel(physicsWorld, entityWorld, 1 / 32f);
+		level = new GameLevel(physicsWorld, entityWorld, 1f);
 		map = level.loadFromFile("maps/debug-map.tmx");		
 
-		mapRenderer = new OrthogonalTiledMapRenderer(map, 1 / 32f, this.batch);
-		
+		mapRenderer = new OrthogonalTiledMapRenderer(map, 1f, this.batch);
+				
 		/**
 		 * Create debug renderer for Box2d
 		 */
 		box2dRenderer = new Box2DDebugRenderer();	
 		debugFont = new BitmapFont();
 		debugRenderer = new ShapeRenderer();
+
+		fbo = new FrameBuffer(Format.RGBA8888, Gdx.graphics.getWidth(), Gdx.graphics.getHeight(), false);
 		
 		this.start();
 	}
@@ -91,26 +112,40 @@ public class GameScreen extends AbstractScreen {
 		/**
 		 * Subscribe this class to the event manager.
 		 */
-		eventManager.subscribe(InputActionEvent.class, this);
+		eventManager.subscribe(InputActionEvent.class, this);		
 	}
 	
 	@Override
 	public void render(float delta) {
 		super.render(delta);
-
-		// simulate physics.
-		physicsWorld.step(1/60f, 6, 2);
 		
-		// update entity system
-		entityWorld.setDelta(delta);
-		entityWorld.process();
-	
+		// simulate physics.
+		physicsWorld.step(1/60f, 6, 2);	
+		
 		// render map
 		mapRenderer.setView(this.camera);
 		mapRenderer.render();
 		
+		batch.begin();			
+		
+			// update entity system
+			entityWorld.setDelta(delta);
+			entityWorld.process();
+			
+		batch.end();		
+
+        fbo.begin();
+    		Gdx.gl.glActiveTexture(GL10.GL_TEXTURE1);
+        	Gdx.gl.glClearColor(0, 0, 0, 1);
+        	Gdx.gl.glClear(GL10.GL_COLOR_BUFFER_BIT);
+        	
+			rayHandler.setCombinedMatrix(this.camera.combined);
+			rayHandler.updateAndRender();
+		fbo.end();
+
 		// debug
-		box2dRenderer.render(physicsWorld, camera.combined);        
+		box2dRenderer.render(physicsWorld, camera.combined);
+				
 	}
 		
 	public void handleEvent(InputActionEvent event) {
@@ -122,7 +157,7 @@ public class GameScreen extends AbstractScreen {
 	public void resize(int width, int height) {
 		super.resize(width, height);
 		
-		camera.setToOrtho(false, 20, 15);
+		camera.setToOrtho(false, game.width, game.height);
 	}
 
 	@Override
@@ -144,5 +179,6 @@ public class GameScreen extends AbstractScreen {
 	@Override
 	public void dispose() {
 		map.dispose();
+		rayHandler.dispose();
 	}
 }

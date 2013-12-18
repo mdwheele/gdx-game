@@ -6,6 +6,9 @@ import com.artemis.Entity;
 import com.artemis.annotations.Mapper;
 import com.artemis.managers.TagManager;
 import com.artemis.systems.EntityProcessingSystem;
+import com.badlogic.gdx.graphics.OrthographicCamera;
+import com.badlogic.gdx.graphics.g2d.ParticleEffect;
+import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.physics.box2d.Body;
 import com.mdwheele.gdxgame.components.AspectComponent;
@@ -19,8 +22,12 @@ public class FlameThrowerSystem extends EntityProcessingSystem {
 	@Mapper ComponentMapper<LifetimeComponent> lifetime;
 	@Mapper ComponentMapper<SpatialComponent> spatial;
 	
+	SpriteBatch batch;
+	OrthographicCamera camera;
+	ParticleEffect effect;
+	
 	public FlameThrowerSystem() {
-		super(Aspect.getAspectForAll(FlameComponent.class, LifetimeComponent.class, SpatialComponent.class));		
+		super(Aspect.getAspectForAll(FlameComponent.class, LifetimeComponent.class, SpatialComponent.class));
 	}
 
 	@Override
@@ -34,6 +41,6 @@ public class FlameThrowerSystem extends EntityProcessingSystem {
 		int direction = (orientation == PlayerOrientation.RIGHT) ? 1: -1;
 		
 		// Flames should follow a sine wave with increasing amplitude.
-		body.applyLinearImpulse(new Vector2(direction * (float)Math.random() - 0.1f, (float)(Math.sin(counter) * Math.random() * 2)), body.getPosition(), true);
+		body.applyLinearImpulse(new Vector2(direction * body.getMass() * (float)Math.random() - 0.1f, (float)(Math.sin(counter) * body.getMass() * Math.random() * 2)), body.getPosition(), true);
 	}
 }

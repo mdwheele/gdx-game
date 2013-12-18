@@ -11,7 +11,7 @@
  <objectgroup name="physics" width="40" height="15">
   <object x="32" y="416" width="512" height="32"/>
   <object x="608" y="416" width="64" height="32"/>
-  <object x="736" y="416" width="544" height="32"/>
+  <object x="736" y="416" width="512" height="32"/>
   <object x="160" y="384" width="224" height="32"/>
   <object x="224" y="352" width="96" height="32"/>
  </objectgroup>

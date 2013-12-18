@@ -23,7 +23,7 @@ public class CameraSystem extends EntityProcessingSystem {
 
 	@Override
 	protected void process(Entity e) {
-		camera.position.set(spatial.get(e).body().getPosition().x, 5f, 0);
+		camera.position.set(spatial.get(e).body().getPosition().x, spatial.get(e).body().getPosition().y, 0);
 		camera.update();
 	}
 }

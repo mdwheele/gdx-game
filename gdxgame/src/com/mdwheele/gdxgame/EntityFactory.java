@@ -4,6 +4,9 @@ import com.artemis.Entity;
 import com.artemis.World;
 import com.artemis.managers.GroupManager;
 import com.artemis.managers.TagManager;
+import com.badlogic.gdx.Gdx;
+import com.badlogic.gdx.graphics.Color;
+import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.maps.MapProperties;
 import com.badlogic.gdx.math.Rectangle;
 import com.badlogic.gdx.math.Vector2;
@@ -18,6 +21,7 @@ import com.mdwheele.gdxgame.components.AspectComponent;
 import com.mdwheele.gdxgame.components.CameraComponent;
 import com.mdwheele.gdxgame.components.FlameComponent;
 import com.mdwheele.gdxgame.components.LifetimeComponent;
+import com.mdwheele.gdxgame.components.LightComponent;
 import com.mdwheele.gdxgame.components.SpatialComponent;
 import com.mdwheele.gdxgame.support.GameBodyType;
 
@@ -49,18 +53,23 @@ public class EntityFactory {
 		Body body = physicsWorld.createBody(def);
 				
 		PolygonShape poly = new PolygonShape();		
-		poly.setAsBox(0.5f, 0.5f);
-		body.createFixture(poly, 1).setUserData(GameBodyType.PLAYER);
+		poly.setAsBox(16f, 16f);
+		
+		FixtureDef fixture = new FixtureDef();
+		fixture.shape = poly;
+		fixture.filter.groupIndex = -1;
+		
+		body.createFixture(fixture).setUserData(GameBodyType.PLAYER);
 		poly.dispose();			
  
 		poly = new PolygonShape();		
-		poly.setAsBox(0.4f, 0.1f, body.getPosition().add(0, -0.5f), 0);
+		poly.setAsBox(0.4f, 0.1f, body.getPosition().add(0, -16f), 0);
 
-		FixtureDef fixture = new FixtureDef();
-		fixture.shape = poly;
-		fixture.isSensor = true;
+		FixtureDef fixture2 = new FixtureDef();
+		fixture2.shape = poly;
+		fixture2.isSensor = true;
 		
-		body.createFixture(fixture).setUserData(GameBodyType.PLAYER_SENSOR);		
+		body.createFixture(fixture2).setUserData(GameBodyType.PLAYER_SENSOR);		
 		poly.dispose();
 		
 		body.setBullet(true);		
@@ -69,11 +78,12 @@ public class EntityFactory {
 		Vector2 position = new Vector2(bounds.x, bounds.y);
 		
 		body.setTransform(position, 0);
-		
+
 		/**
 		 * Player state and orientation (for animation?)
 		 */
 		AspectComponent aspect = new AspectComponent();
+		aspect.image = new Texture(Gdx.files.internal("img/frank.png"));
 		e.addComponent(aspect);
 		
 		/**
@@ -118,12 +128,6 @@ public class EntityFactory {
 		Vector2 position = new Vector2(bounds.x, bounds.y);
 		
 		body.setTransform(position, 0);
-		
-		/**
-		 * Player state and orientation (for animation?)
-		 */
-		AspectComponent aspect = new AspectComponent();
-		e.addComponent(aspect);
 		
 		/**
 		 * Add spatial component (physics)
@@ -181,12 +185,12 @@ public class EntityFactory {
 		Body body = physicsWorld.createBody(def); 
 		
 		CircleShape circle = new CircleShape();		
-		circle.setRadius(0.1f);
+		circle.setRadius(2f);
 		circle.setPosition(new Vector2(0, -0.5f));
 		
 		FixtureDef fixture = new FixtureDef();
 		fixture.shape = circle;
-		fixture.isSensor = true;
+		fixture.filter.groupIndex = -1;
 		
 		body.createFixture(fixture).setUserData(GameBodyType.FLAME);
 		circle.dispose();	
@@ -198,7 +202,7 @@ public class EntityFactory {
 		
 		LifetimeComponent lifetime = new LifetimeComponent();
 		lifetime.counter = 0;
-		lifetime.lifetime = 20 + (int)(Math.random() * 10);
+		lifetime.lifetime = 280 + (int)(Math.random() * 10);
 		e.addComponent(lifetime);
 		
 		FlameComponent flame = new FlameComponent();
@@ -206,6 +210,14 @@ public class EntityFactory {
 		
 		body.setLinearVelocity(velocity);
 		body.setUserData(e);
+
+		/**
+		 * Light!
+		 */
+		LightComponent light = new LightComponent();
+		light.color = new Color(1,1,1,0.5f);
+		light.intensity = 50f;
+		e.addComponent(light);
 		
 		return e;
 	}
