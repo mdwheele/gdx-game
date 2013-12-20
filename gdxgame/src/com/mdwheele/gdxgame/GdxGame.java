@@ -1,8 +1,9 @@
 package com.mdwheele.gdxgame;
 
 import com.badlogic.gdx.Game;
-import com.badlogic.gdx.graphics.FPSLogger;
+import com.badlogic.gdx.graphics.g2d.BitmapFont;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
+import com.badlogic.gdx.utils.Logger;
 import com.mdwheele.gdxgame.screens.GameScreen;
 
 public class GdxGame extends Game {
@@ -14,29 +15,38 @@ public class GdxGame extends Game {
 	public int width;
 	public int height;
 	
-	/* Shared SpriteBatch */
-	private SpriteBatch batch;
+	/* SpriteBatch */
+	public SpriteBatch batch;
+	public BitmapFont font;
 	
-	/* FPS Debug Logger */
-	FPSLogger fpsLogger;
+	public Logger logger;
+	public static int LogLevel = Logger.DEBUG;
 	
 	public GdxGame(int width, int height) {
 		this.width = width;
 		this.height = height;
+		
 		this.levelPath = "maps/debug-map.tmx";
 	}
 	
 	public void create() {		
-		batch = new SpriteBatch();
+		logger = new Logger("GdxGame");
+		logger.setLevel(GdxGame.LogLevel);
 		
+		logger.info("Initializing Game Resources.");
+		batch = new SpriteBatch();
+		font = new BitmapFont();		
+		
+		logger.info("Setting up screen.");
 		setScreen(new GameScreen(this, levelPath));
-	}
-
-	public void render() {
-		super.render();
 	}
 	
 	public void dispose() {
 		batch.dispose();
+		font.dispose();
 	}	
+	
+	public boolean isDebug() {
+		return logger.getLevel() == Logger.DEBUG;
+	}
 }
