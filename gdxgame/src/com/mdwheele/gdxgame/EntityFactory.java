@@ -13,6 +13,8 @@ import com.badlogic.gdx.physics.box2d.BodyDef.BodyType;
 import com.badlogic.gdx.physics.box2d.CircleShape;
 import com.badlogic.gdx.physics.box2d.FixtureDef;
 import com.badlogic.gdx.physics.box2d.PolygonShape;
+import com.mdwheele.gdxgame.components.PlayerComponent;
+import com.mdwheele.gdxgame.components.SpatialComponent;
 
 public class EntityFactory {	
 	
@@ -63,11 +65,16 @@ public class EntityFactory {
 		body.setBullet(true);		
 		body.setFixedRotation(true);
 		
-		Vector2 position = new Vector2(bounds.x, bounds.y);
-		
-		body.setTransform(position, 0);
-		
+		Vector2 position = new Vector2(bounds.x, bounds.y);		
+		body.setTransform(position, 0);		
 		body.setUserData(e);
+		
+		// SpatialComponent
+		SpatialComponent spatial = new SpatialComponent(body, 128.0f);
+		e.addComponent(spatial);
+		
+		// PlayerComponent
+		e.addComponent(new PlayerComponent());
 		
 		return e;
 	}

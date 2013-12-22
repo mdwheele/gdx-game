@@ -9,9 +9,11 @@ import com.badlogic.gdx.physics.box2d.World;
 import com.badlogic.gdx.utils.Disposable;
 import com.badlogic.gdx.utils.Logger;
 import com.mdwheele.gdxgame.GdxGame;
+import com.mdwheele.gdxgame.input.controls.ActionListener;
 import com.mdwheele.gdxgame.screens.GameScreen;
+import com.mdwheele.gdxgame.systems.PlayerInputSystem;
 
-public class GameWorld implements Disposable {
+public class GameWorld implements Disposable, ActionListener {
 	
 	// Tilemap Resources
 	public TiledMap tiledMap;
@@ -27,12 +29,11 @@ public class GameWorld implements Disposable {
 	public GameScreen gameScreen;
 	
 	// Debug Resources
-	public Logger logger;
+	private static final Logger logger = new Logger(GameWorld.class.getSimpleName());
 	public Box2DDebugRenderer box2dRenderer;
 	
 	public GameWorld(GameScreen gameScreen) {
 		// Set up logger interface.
-		logger = new Logger(this.getClass().getSimpleName());
 		logger.setLevel(GdxGame.LogLevel);
 		logger.info("Initializing...");
 		
@@ -40,7 +41,7 @@ public class GameWorld implements Disposable {
 		this.gameScreen = gameScreen;
 
         // Create Box2d World        
-        box2dWorld = new com.badlogic.gdx.physics.box2d.World(new Vector2(0, 0), true);
+        box2dWorld = new com.badlogic.gdx.physics.box2d.World(new Vector2(0, -9.8f), true);
 		
 		// Create Artemis Entity World
 		artemisWorld = new com.artemis.World();
@@ -49,6 +50,18 @@ public class GameWorld implements Disposable {
 		box2dRenderer = new Box2DDebugRenderer();
 	}
 
+	@Override
+	public void onAction(String name, boolean isPressed, float tpf) {
+		if(isPressed) {
+			logger.info(name);
+		}
+	}
+	
+	public void start() {
+		artemisWorld.setSystem(new PlayerInputSystem(gameScreen.input));
+		artemisWorld.initialize();		
+	}
+	
 	public void update(float delta) {
 		// Step physics simulation.
 		box2dWorld.step(1/60f, 6, 2);
@@ -64,7 +77,7 @@ public class GameWorld implements Disposable {
 		if(gameScreen.game.isDebug()) {
 			box2dRenderer.render(box2dWorld, this.gameScreen.camera.combined.scl(GameWorld.toWorld(1f)));
 		}
-	}	
+	}
 	
 	public void load(String mapFileName) {
 		logger.info(String.format("Loading %s", mapFileName));
@@ -92,6 +105,5 @@ public class GameWorld implements Disposable {
 	
 	public static final float toBox2d(float world) {
 		return world / 32.0f;
-	}
-	
+	}	
 }

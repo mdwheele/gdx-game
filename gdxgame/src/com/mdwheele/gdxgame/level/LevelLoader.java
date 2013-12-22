@@ -31,14 +31,13 @@ public class LevelLoader {
 	private World box2dWorld;	
 
 	// Logger for the game level.
-	public Logger logger;	
+	private static final Logger logger = new Logger(LevelLoader.class.getSimpleName());
 	
 	// Default fixture for map terrain.
 	FixtureDef defaultFixture;
 	
 	public LevelLoader(GameWorld level) {
 		// Set up logger interface.
-		logger = new Logger(this.getClass().getSimpleName());
 		logger.setLevel(GdxGame.LogLevel);
 		logger.info("Initializing...");
 		
@@ -55,7 +54,7 @@ public class LevelLoader {
 
 	public TiledMap load(String mapFileName) {
 		tiledMap = new TmxMapLoader().load(mapFileName);	
-		
+				
 		this.loadPhysicsFromLayer("physics");
 		this.loadEntitiesFromLayer("entities");
 		
@@ -80,6 +79,8 @@ public class LevelLoader {
 		
 		MapObjects objects = layer.getObjects();
 		Iterator<MapObject> objectIterator = objects.iterator();
+		
+		logger.info("Loading environment physics.");
 		
 		while(objectIterator.hasNext()) {
 			MapObject object = objectIterator.next();
@@ -134,6 +135,8 @@ public class LevelLoader {
 		
 		MapObjects objects = layer.getObjects();
 		Iterator<MapObject> objectIterator = objects.iterator();
+		
+		logger.info("Loading entities.");
 		
 		while(objectIterator.hasNext()) {
 			MapObject object = objectIterator.next();

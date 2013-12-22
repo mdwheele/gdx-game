@@ -1,22 +1,29 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<map version="1.0" orientation="orthogonal" width="40" height="15" tilewidth="32" tileheight="32">
- <tileset firstgid="1" name="cave" tilewidth="32" tileheight="32" spacing="1">
-  <image source="tilesets/cave.png" width="256" height="256"/>
+<map version="1.0" orientation="orthogonal" width="40" height="15" tilewidth="32" tileheight="32" backgroundcolor="#b9deff">
+ <tileset firstgid="1" name="kenny" tilewidth="32" tileheight="32" spacing="1">
+  <image source="tilesets/kenny.png" width="420" height="430"/>
  </tileset>
  <layer name="bg" width="40" height="15">
   <data encoding="base64" compression="zlib">
-   eJxjYmBgYBrFo3gUj+JRPIpHEBYGYh4gFhkEbsHmLnQ8UO4UA2JxMrEEmjnofGqYO5gxAK8/B/0=
+   eJxjYBgFQw20DrQDCIBR91EGiHGfIw3s7QHiPiLUtaKxS/DggQDo7usF4pk4MK0AvrAcDO7DB2jtPkkc4lI42PR2Hy67yFFDrPs0yXQbLrvRwwifOnzuK6QChgF8bHJxLxkYVxzgY5OLAR5ZTZU=
   </data>
  </layer>
  <objectgroup name="physics" width="40" height="15">
-  <object x="32" y="416" width="512" height="32"/>
-  <object x="608" y="416" width="64" height="32"/>
-  <object x="736" y="416" width="512" height="32"/>
-  <object x="160" y="384" width="224" height="32"/>
-  <object x="224" y="352" width="96" height="32"/>
+  <object x="0" y="416" width="544" height="64"/>
+  <object x="480" y="384" width="64" height="32"/>
+  <object x="512" y="352" width="32" height="32"/>
+  <object x="608" y="416" width="32" height="64"/>
+  <object x="704" y="384" width="32" height="96"/>
+  <object x="800" y="352" width="32" height="32"/>
+  <object x="800" y="384" width="64" height="32"/>
+  <object x="800" y="416" width="480" height="64"/>
+  <object x="416" y="320" width="32" height="32"/>
+  <object x="608" y="192" width="64" height="32"/>
+  <object x="704" y="256" width="64" height="32"/>
+  <object x="1024" y="192" width="256" height="224"/>
+  <object x="928" y="64" width="32" height="288"/>
  </objectgroup>
  <objectgroup name="entities" width="40" height="15">
   <object name="Player" x="256" y="289" width="32" height="32"/>
-  <object name="Boogeyman" x="624" y="330" width="32" height="32"/>
  </objectgroup>
 </map>

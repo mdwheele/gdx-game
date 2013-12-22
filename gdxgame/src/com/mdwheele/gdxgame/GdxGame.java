@@ -18,9 +18,9 @@ public class GdxGame extends Game {
 	/* SpriteBatch */
 	public SpriteBatch batch;
 	public BitmapFont font;
-	
-	public Logger logger;
+
 	public static int LogLevel = Logger.DEBUG;
+	public Logger logger = new Logger("GdxGame", GdxGame.LogLevel);
 	
 	public GdxGame(int width, int height) {
 		this.width = width;
@@ -30,9 +30,6 @@ public class GdxGame extends Game {
 	}
 	
 	public void create() {		
-		logger = new Logger("GdxGame");
-		logger.setLevel(GdxGame.LogLevel);
-		
 		logger.info("Initializing Game Resources.");
 		batch = new SpriteBatch();
 		font = new BitmapFont();		

@@ -3,6 +3,8 @@ package com.mdwheele.gdxgame.screens;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Input.Keys;
 import com.mdwheele.gdxgame.GdxGame;
+import com.mdwheele.gdxgame.input.controls.InputListener;
+import com.mdwheele.gdxgame.input.controls.KeyTrigger;
 import com.mdwheele.gdxgame.level.GameWorld;
 
 public class GameScreen extends AbstractScreen {
@@ -14,6 +16,7 @@ public class GameScreen extends AbstractScreen {
 		super(game);
 		
 		currentLevel = new GameWorld(this);
+		currentLevel.start();
 		currentLevel.load(levelPath);
 	}
 	
