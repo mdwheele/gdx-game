@@ -4,6 +4,8 @@ import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Screen;
 import com.badlogic.gdx.graphics.GL10;
 import com.badlogic.gdx.graphics.OrthographicCamera;
+import com.badlogic.gdx.graphics.g2d.BitmapFont;
+import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.mdwheele.gdxgame.GdxGame;
 import com.mdwheele.gdxgame.input.InputManager;
 
@@ -30,6 +32,14 @@ public abstract class AbstractScreen implements Screen {
 		input.update(delta);
 		
 		game.batch.setProjectionMatrix(camera.combined);
+	}
+	
+	public BitmapFont getFont() {
+		return game.font;
+	}
+	
+	public SpriteBatch getSpriteBatch() {
+		return game.batch;
 	}
 
 	@Override

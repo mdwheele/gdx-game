@@ -58,7 +58,7 @@ public class GameWorld implements Disposable, ActionListener {
 	}
 	
 	public void start() {
-		artemisWorld.setSystem(new PlayerInputSystem(gameScreen.input));
+		artemisWorld.setSystem(new PlayerInputSystem(this));
 		artemisWorld.initialize();		
 	}
 	

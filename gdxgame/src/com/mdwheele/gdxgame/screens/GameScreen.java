@@ -11,6 +11,7 @@ public class GameScreen extends AbstractScreen {
 	
 	// The current level being played.
 	private GameWorld currentLevel;
+	private String levelPath;
 	
 	public GameScreen(final GdxGame game, String levelPath) {
 		super(game);
@@ -18,6 +19,8 @@ public class GameScreen extends AbstractScreen {
 		currentLevel = new GameWorld(this);
 		currentLevel.start();
 		currentLevel.load(levelPath);
+		
+		this.levelPath = levelPath;
 	}
 	
 	@Override
@@ -29,6 +32,14 @@ public class GameScreen extends AbstractScreen {
 		// Exit game hotkey... fix.
 		if(Gdx.input.isKeyPressed(Keys.ESCAPE)) {
 			Gdx.app.exit();
+		}
+		
+		// Restart level
+		if(Gdx.input.isKeyPressed(Keys.GRAVE)) {
+			currentLevel.dispose();
+			currentLevel = new GameWorld(this);
+			currentLevel.start();
+			currentLevel.load(levelPath);
 		}
 		
 		// Show FPS if game is in debug mode.

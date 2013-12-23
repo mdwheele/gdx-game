@@ -48,7 +48,7 @@ public class LevelLoader {
 		/* Set default fixture property definition */
         defaultFixture = new FixtureDef();
         defaultFixture.density = 1.0f;
-        defaultFixture.friction = 0.0f;
+        defaultFixture.friction = 0.2f;
         defaultFixture.restitution = 0.0f;
 	}
 
