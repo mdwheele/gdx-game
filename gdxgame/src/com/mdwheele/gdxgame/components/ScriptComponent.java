@@ -4,9 +4,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 
 import com.artemis.Component;
-import com.mdwheele.gdxgame.events.Event;
 import com.mdwheele.gdxgame.scripts.Script;
-import com.mdwheele.gdxgame.services.EventManager;
 
 public class ScriptComponent extends Component {
 	private ArrayList<Script> scripts;

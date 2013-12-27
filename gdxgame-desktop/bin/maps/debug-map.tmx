@@ -5,24 +5,24 @@
  </tileset>
  <layer name="bg" width="40" height="15">
   <data encoding="base64" compression="zlib">
-   eJxjYBgFQw20DrQDCIBR91EGiHGfI81dgRu0orFL8OCBAOju6wXimTgwtUEPEPcNYvcRA2jtPkkc4lI42PR2Hy67yFFDrPs0yXQbLrvRwwifOnzuK6QChgF8bHJxLxkYVxzgY5OLAUp/THs=
+   eJxjYBgFQw20DrQDCIBR91EGiHGfI81dgRu0orFL8GB0UItHjlbu6wXimTgwNr245IgBPUDcN4jdRwwYKPdJ4WDTy30VUEwqwJdfiXWfJhHuI8Ud6GxcbiTkvkIqYBjowsGmxOxeMjCuOMDHJhcDAE6iVnI=
   </data>
  </layer>
  <objectgroup name="physics" width="40" height="15">
   <object x="0" y="416" width="544" height="64"/>
-  <object x="480" y="384" width="64" height="32"/>
-  <object x="512" y="352" width="32" height="32"/>
-  <object x="608" y="416" width="32" height="64"/>
+  <object x="608" y="384" width="32" height="96"/>
   <object x="704" y="384" width="32" height="96"/>
   <object x="800" y="352" width="32" height="32"/>
   <object x="800" y="384" width="64" height="32"/>
   <object x="800" y="416" width="480" height="64"/>
-  <object x="416" y="320" width="32" height="32"/>
   <object x="640" y="256" width="64" height="32"/>
   <object x="1024" y="192" width="256" height="224"/>
   <object x="928" y="64" width="32" height="288"/>
+  <object x="352" y="352" width="64" height="32"/>
+  <object x="160" y="224" width="64" height="192"/>
+  <object x="128" y="256" width="32" height="160"/>
  </objectgroup>
  <objectgroup name="entities" width="40" height="15">
-  <object name="Player" x="256" y="289" width="32" height="32"/>
+  <object name="Player" x="178" y="111" width="32" height="32"/>
  </objectgroup>
 </map>

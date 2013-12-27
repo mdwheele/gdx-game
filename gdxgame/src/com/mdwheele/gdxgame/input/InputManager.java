@@ -14,11 +14,15 @@ import com.badlogic.gdx.utils.IntMap;
 import com.badlogic.gdx.utils.Logger;
 import com.mdwheele.gdxgame.GdxGame;
 import com.mdwheele.gdxgame.input.controls.ActionListener;
+import com.mdwheele.gdxgame.input.controls.AnalogListener;
 import com.mdwheele.gdxgame.input.controls.InputListener;
+import com.mdwheele.gdxgame.input.controls.JoyAxisTrigger;
+import com.mdwheele.gdxgame.input.controls.JoyButtonTrigger;
 import com.mdwheele.gdxgame.input.controls.KeyTrigger;
 import com.mdwheele.gdxgame.input.controls.Trigger;
-import com.mdwheele.gdxgame.input.controls.Xbox360Pad;
 import com.mdwheele.gdxgame.input.event.InputEvent;
+import com.mdwheele.gdxgame.input.event.JoyAxisEvent;
+import com.mdwheele.gdxgame.input.event.JoyButtonEvent;
 import com.mdwheele.gdxgame.input.event.KeyInputEvent;
 
 
@@ -26,13 +30,14 @@ public class InputManager {
 
 	private static final Logger logger = new Logger(InputManager.class.getSimpleName(), GdxGame.LogLevel);
 	private float delta;
-	private boolean safeMode;
-	private float axisDeadZone = 0.15f;
+	private float axisDeadZone = 0.35f;
 	private Vector2 cursorPosition;
+	private PovDirection prevDirection;
 	
 	private ArrayList<InputEvent> inputQueue;
 	private IntMap<ArrayList<Mapping>> bindings;
 	private HashMap<String, Mapping> mappings;
+	private IntMap<Float> axisValues;
 	
 	private static class Mapping {
 		private final String name;
@@ -53,12 +58,11 @@ public class InputManager {
 		inputQueue = new ArrayList<InputEvent>();
 		bindings = new IntMap<ArrayList<Mapping>>();
 		mappings = new HashMap<String, Mapping>();
+		axisValues = new IntMap<Float>();
 	}
 	
 	public void update(float delta) {
 		this.delta = delta;
-		
-		safeMode = delta < axisDeadZone;
 		
 		processInputQueue();
 	}
@@ -74,6 +78,65 @@ public class InputManager {
 				KeyInputEvent e = (KeyInputEvent)event;
 				int hash = KeyTrigger.keyHash(e.getKeyCode());
 				invokeActions(hash, e.isPressed());
+			}
+			
+			if(event instanceof JoyButtonEvent) {
+				JoyButtonEvent e = (JoyButtonEvent)event;
+				int hash = JoyButtonTrigger.keyHash(e.getButtonId());
+				invokeActions(hash, e.isPressed());
+			}
+			
+			if(event instanceof JoyAxisEvent) {
+				JoyAxisEvent e = (JoyAxisEvent)event;
+				int axis = e.getAxisId();
+				float value = e.getValue();
+								
+				if(value < axisDeadZone && value > -axisDeadZone) {
+					int hash1 = JoyAxisTrigger.joyAxisHash(axis, true);
+					int hash2 = JoyAxisTrigger.joyAxisHash(axis, false);
+
+					Float val1 = axisValues.get(hash1);
+					Float val2 = axisValues.get(hash2);
+					
+					if(val1 != null && val1.floatValue() > axisDeadZone) {
+						invokeActions(hash1, false);
+					}
+					
+					if(val2 != null && val2.floatValue() > axisDeadZone) {
+						invokeActions(hash2, false);
+					}
+					
+		            axisValues.remove(hash1);
+		            axisValues.remove(hash2);
+				}
+				else if (value < 0) {
+					int hash = JoyAxisTrigger.joyAxisHash(axis, true);
+		            int otherHash = JoyAxisTrigger.joyAxisHash(axis, false);
+		                  
+		            Float otherVal = axisValues.get(otherHash);
+		            
+		            if (otherVal != null && otherVal.floatValue() > axisDeadZone) {
+		                invokeActions(otherHash, false);
+		            }
+		            
+		            invokeAnalogsAndActions(hash, -value, true);
+		            axisValues.put(hash, -value);
+		            axisValues.remove(otherHash);
+				}
+				else {
+					int hash = JoyAxisTrigger.joyAxisHash(axis, false);
+		            int otherHash = JoyAxisTrigger.joyAxisHash(axis, true);
+		                 
+		            Float otherVal = axisValues.get(otherHash);
+		            
+		            if (otherVal != null && otherVal.floatValue() > axisDeadZone) {
+		                invokeActions(otherHash, false);
+		            }
+		            
+		            invokeAnalogsAndActions(hash, value, true);
+		            axisValues.put(hash, value);
+		            axisValues.remove(otherHash);
+				}
 			}
 		}
 		
@@ -94,6 +157,51 @@ public class InputManager {
 			}
 		}
 	}
+	
+	private void invokeAnalogs(int hash, float value, boolean isAxis) {
+		ArrayList<Mapping> maps = bindings.get(hash);
+		
+		if(maps == null)
+			return;
+		
+		for(Mapping mapping: maps) {
+			for(InputListener listener: mapping.listeners) {
+				if(listener instanceof AnalogListener) {
+					((AnalogListener) listener).onAnalog(mapping.name, value, delta);
+				}
+			}
+		}
+	}
+	
+	private void invokeAnalogsAndActions(int hash, float value, boolean applyDelta) {
+        if (value < axisDeadZone) {
+            invokeAnalogs(hash, value, !applyDelta);
+            return;
+        }
+
+        ArrayList<Mapping> maps = bindings.get(hash);
+        if (maps == null) {
+            return;
+        }
+
+        boolean valueChanged = !axisValues.containsKey(hash);
+        
+        if (applyDelta) {
+            value *= delta;
+        }
+
+		for(Mapping mapping: maps) {
+			for(InputListener listener: mapping.listeners) {
+                if (listener instanceof ActionListener && valueChanged) {
+                    ((ActionListener) listener).onAction(mapping.name, true, delta);
+                }
+                
+				if(listener instanceof AnalogListener) {
+					((AnalogListener) listener).onAnalog(mapping.name, value, delta);
+				}
+			}
+		}
+    }
 	
 	public void addListener(InputListener listener, String... mappingNames) {
 		for(String mappingName: mappingNames) {
@@ -216,45 +324,41 @@ public class InputManager {
 	/**
 	 * Input adapter for capturing input events from attached game controllers.
 	 */
-	private ControllerAdapter controllerListener = new ControllerAdapter() {
-		@Override
-		public void connected(Controller controller) {
-			logger.info("Controller connected!");
-		}
-
-		@Override
-		public void disconnected(Controller controller) {
-		}
-		
+	private ControllerAdapter controllerListener = new ControllerAdapter() {		
 		@Override
 		public boolean axisMoved(Controller controller, int axisCode, float value) {
-			if(Math.abs(value) > axisDeadZone) {
-				logger.info(String.format("Axis %d is set to %f", axisCode, value));
-			}
+			inputQueue.add(new JoyAxisEvent(axisCode, value, (value < 0)));
 			
 			return false;
 		}
 
 		@Override
 		public boolean buttonDown(Controller controller, int buttonCode) {
-			logger.info(String.format("Controller pressed %s button.", buttonCode));
-			
-			if(buttonCode == Xbox360Pad.BUTTON_BACK) {
-				Gdx.app.exit();
-			}
-			
+			inputQueue.add(new JoyButtonEvent(buttonCode, true));
 			return false;
 		}
 
 		@Override
 		public boolean buttonUp(Controller controller, int buttonCode) {
-			logger.info(String.format("Controller released %s button.", buttonCode));
+			inputQueue.add(new JoyButtonEvent(buttonCode, false));
 			return false;
 		}
 
 		@Override
-		public boolean povMoved(Controller controller, int povCode, PovDirection value) {
-			logger.info(String.format("Controller pressed %s button.", value));
+		public boolean povMoved(Controller controller, int povCode, PovDirection value) {			
+			if(value == PovDirection.center) {
+				if(prevDirection != null) {				
+					inputQueue.add(new JoyButtonEvent(prevDirection, false));
+					prevDirection = null;
+				}
+			}
+			else {
+				if(prevDirection == null) {
+					prevDirection = value;
+					inputQueue.add(new JoyButtonEvent(value, true));
+				}
+			}
+
 			return false;
 		}
 

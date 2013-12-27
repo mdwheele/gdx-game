@@ -1,9 +1,7 @@
-package com.mdwheele.gdxgame;
+package com.mdwheele.gdxgame.entities;
 
 import com.artemis.Entity;
 import com.artemis.World;
-import com.artemis.managers.GroupManager;
-import com.artemis.managers.TagManager;
 import com.badlogic.gdx.maps.MapProperties;
 import com.badlogic.gdx.math.Rectangle;
 import com.badlogic.gdx.math.Vector2;
@@ -13,6 +11,7 @@ import com.badlogic.gdx.physics.box2d.BodyDef.BodyType;
 import com.badlogic.gdx.physics.box2d.CircleShape;
 import com.badlogic.gdx.physics.box2d.FixtureDef;
 import com.badlogic.gdx.physics.box2d.PolygonShape;
+import com.mdwheele.gdxgame.components.CameraComponent;
 import com.mdwheele.gdxgame.components.PlayerComponent;
 import com.mdwheele.gdxgame.components.SpatialComponent;
 
@@ -70,6 +69,9 @@ public class EntityFactory {
 		
 		// PlayerComponent
 		e.addComponent(new PlayerComponent());
+		
+		// CameraComponent
+		e.addComponent(new CameraComponent(body));
 		
 		return e;
 	}

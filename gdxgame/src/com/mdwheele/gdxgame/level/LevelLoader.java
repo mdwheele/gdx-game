@@ -21,8 +21,8 @@ import com.badlogic.gdx.physics.box2d.FixtureDef;
 import com.badlogic.gdx.physics.box2d.Shape;
 import com.badlogic.gdx.physics.box2d.World;
 import com.badlogic.gdx.utils.Logger;
-import com.mdwheele.gdxgame.EntityFactory;
 import com.mdwheele.gdxgame.GdxGame;
+import com.mdwheele.gdxgame.entities.EntityFactory;
 
 public class LevelLoader {
 

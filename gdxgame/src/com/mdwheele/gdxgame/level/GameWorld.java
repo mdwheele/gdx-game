@@ -11,6 +11,7 @@ import com.badlogic.gdx.utils.Logger;
 import com.mdwheele.gdxgame.GdxGame;
 import com.mdwheele.gdxgame.input.controls.ActionListener;
 import com.mdwheele.gdxgame.screens.GameScreen;
+import com.mdwheele.gdxgame.systems.CameraSystem;
 import com.mdwheele.gdxgame.systems.PlayerInputSystem;
 
 public class GameWorld implements Disposable, ActionListener {
@@ -41,7 +42,7 @@ public class GameWorld implements Disposable, ActionListener {
 		this.gameScreen = gameScreen;
 
         // Create Box2d World        
-        box2dWorld = new com.badlogic.gdx.physics.box2d.World(new Vector2(0, -9.8f), true);
+        box2dWorld = new com.badlogic.gdx.physics.box2d.World(new Vector2(0, -30.0f), true);
 		
 		// Create Artemis Entity World
 		artemisWorld = new com.artemis.World();
@@ -59,7 +60,8 @@ public class GameWorld implements Disposable, ActionListener {
 	
 	public void start() {
 		artemisWorld.setSystem(new PlayerInputSystem(this));
-		artemisWorld.initialize();		
+		artemisWorld.setSystem(new CameraSystem(gameScreen.camera));
+		artemisWorld.initialize();	
 	}
 	
 	public void update(float delta) {
