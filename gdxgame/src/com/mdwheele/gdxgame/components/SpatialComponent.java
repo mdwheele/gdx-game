@@ -7,13 +7,9 @@ import com.mdwheele.gdxgame.level.GameWorld;
 
 public class SpatialComponent extends Component {
 	private Body physicsBody = null;
-	
-	private float maxVelocity;
-	
-	public SpatialComponent(Body body, float maxVelocity) {
-		this.physicsBody = body;
-		
-		this.maxVelocity = maxVelocity;
+
+	public SpatialComponent(Body body) {
+		this.physicsBody = body;		
 	}
 	
 	public Body getBody() { 
@@ -26,9 +22,5 @@ public class SpatialComponent extends Component {
 	
 	public Vector2 getWorldPosition() {
 		return physicsBody.getPosition().scl(GameWorld.toWorld(1));
-	}
-	
-	public float getMaxVelocity() {
-		return maxVelocity;
 	}
 }

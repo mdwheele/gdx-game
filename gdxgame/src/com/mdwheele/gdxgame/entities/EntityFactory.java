@@ -14,6 +14,7 @@ import com.badlogic.gdx.physics.box2d.PolygonShape;
 import com.mdwheele.gdxgame.components.CameraComponent;
 import com.mdwheele.gdxgame.components.PlayerComponent;
 import com.mdwheele.gdxgame.components.SpatialComponent;
+import com.mdwheele.gdxgame.level.GameWorld;
 
 public class EntityFactory {	
 	
@@ -46,17 +47,41 @@ public class EntityFactory {
 		
 		body.createFixture(fixture);
 		poly.dispose();			
- 
+
+		// Create ground sensor.
 		poly = new PolygonShape();		
-		poly.setAsBox(bounds.width * 0.9f, bounds.height / 6, body.getPosition().add(0, -(bounds.height)), 0);
+		poly.setAsBox(bounds.width * 0.9f, bounds.height / 10, body.getPosition().add(0, -bounds.height + GameWorld.toBox2d(0.75f)), 0);
 
 		FixtureDef groundSensorFixture = new FixtureDef();
 		groundSensorFixture.shape = poly;
 		groundSensorFixture.isSensor = true;	
 		
-		body.createFixture(groundSensorFixture).setUserData(3);		
+		body.createFixture(groundSensorFixture).setUserData(2);		
+		poly.dispose();
+
+		// Create left wall sensor.
+		poly = new PolygonShape();
+		poly.setAsBox(bounds.width / 10, bounds.height * 0.8f, body.getPosition().add(-bounds.width + GameWorld.toBox2d(0.75f), 0), 0);
+
+		FixtureDef leftWallSensorFixture = new FixtureDef();
+		leftWallSensorFixture.shape = poly;
+		leftWallSensorFixture.isSensor = true;	
+
+		body.createFixture(leftWallSensorFixture).setUserData(1);	
+		poly.dispose();
+
+		// Create left wall sensor.
+		poly = new PolygonShape();
+		poly.setAsBox(bounds.width / 10, bounds.height * 0.8f, body.getPosition().add(bounds.width - GameWorld.toBox2d(0.75f), 0), 0);
+
+		FixtureDef rightWallSensorFixture = new FixtureDef();
+		rightWallSensorFixture.shape = poly;
+		rightWallSensorFixture.isSensor = true;	
+
+		body.createFixture(rightWallSensorFixture).setUserData(3);		
 		poly.dispose();
 		
+		// Rest of player entity.		
 		body.setFixedRotation(true);
 		
 		Vector2 position = new Vector2(bounds.x, bounds.y);		
@@ -64,11 +89,11 @@ public class EntityFactory {
 		body.setUserData(e);
 		
 		// SpatialComponent
-		SpatialComponent spatial = new SpatialComponent(body, 256.0f);
+		SpatialComponent spatial = new SpatialComponent(body);
 		e.addComponent(spatial);
 		
 		// PlayerComponent
-		e.addComponent(new PlayerComponent());
+		e.addComponent(new PlayerComponent(372.0f, 1.5f));
 		
 		// CameraComponent
 		e.addComponent(new CameraComponent(body));

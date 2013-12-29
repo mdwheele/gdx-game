@@ -42,7 +42,7 @@ public class GameWorld implements Disposable, ActionListener {
 		this.gameScreen = gameScreen;
 
         // Create Box2d World        
-        box2dWorld = new com.badlogic.gdx.physics.box2d.World(new Vector2(0, -30.0f), true);
+        box2dWorld = new com.badlogic.gdx.physics.box2d.World(new Vector2(0, -10.0f), true);
 		
 		// Create Artemis Entity World
 		artemisWorld = new com.artemis.World();
@@ -60,21 +60,21 @@ public class GameWorld implements Disposable, ActionListener {
 	
 	public void start() {
 		artemisWorld.setSystem(new PlayerInputSystem(this));
-		artemisWorld.setSystem(new CameraSystem(gameScreen.camera));
+		artemisWorld.setSystem(new CameraSystem(this));
 		artemisWorld.initialize();	
 	}
 	
 	public void update(float delta) {
 		// Step physics simulation.
 		box2dWorld.step(1/60f, 6, 2);
-		
-		// Update entity system.
-		artemisWorld.setDelta(delta);
-		artemisWorld.process();
-		
+
 		// Render Map!
 		tiledMapRenderer.setView(this.gameScreen.camera);
 		tiledMapRenderer.render();
+		
+		// Update entity system.
+		artemisWorld.setDelta(delta);
+		artemisWorld.process();		
 		
 		if(gameScreen.game.isDebug()) {
 			box2dRenderer.render(box2dWorld, this.gameScreen.camera.combined.scl(GameWorld.toWorld(1f)));

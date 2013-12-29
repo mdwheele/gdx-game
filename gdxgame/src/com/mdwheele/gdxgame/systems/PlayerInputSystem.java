@@ -30,7 +30,7 @@ import com.mdwheele.gdxgame.input.controls.Xbox360Pad;
 import com.mdwheele.gdxgame.level.GameWorld;
 
 public class PlayerInputSystem extends EntityProcessingSystem implements ActionListener {
-	@Mapper ComponentMapper<PlayerComponent> player;
+	@Mapper ComponentMapper<PlayerComponent> pm;
 	@Mapper ComponentMapper<SpatialComponent> sm;
 	
 	BitmapFont font;
@@ -46,10 +46,12 @@ public class PlayerInputSystem extends EntityProcessingSystem implements ActionL
 	
 	// "States"
 	private boolean grounded;
+	private boolean leftWallTouching;
+	private boolean rightWallTouching;
 	
 	// Used for n-jumping.
 	private int jumpCounter = 0;
-	private int maxJumps = 3;
+	private int maxJumps = 1;
 	private boolean canJumpAgain = true;
 		
 	public PlayerInputSystem(GameWorld gameWorld) {
@@ -93,61 +95,112 @@ public class PlayerInputSystem extends EntityProcessingSystem implements ActionL
 		
 		input.addListener(this, new String[]{"Left", "Right", "Boost", "Jump"});
 	}
-
+	
 	@Override
 	protected void process(Entity e) {		
+		PlayerComponent player = pm.get(e);
 		SpatialComponent spatial = sm.get(e);
 		Body body = spatial.getBody();
 		
 		// Handle Movement
 		Vector2 currentVelocity = body.getLinearVelocity();		
-		float maxVelocity = spatial.getMaxVelocity();
+		float maxVelocity = player.getMaxVelocity(boosting);
 		
 		Vector2 movement = new Vector2(0, 0);
 				
-		if(movingLeft) {			
+		if(movingLeft && !leftWallTouching) {			
 			movement.x -= 1;
 		}
 		
-		if(movingRight) {
+		if(movingRight && !rightWallTouching) {
 			movement.x += 1;
 		}
 		
 		if(movement.len() > 0) {
+			// We have movement direction, but we need to calculate magnitude.
 			movement.nor();
-			movement.scl(maxVelocity);	
-			movement.scl(GameWorld.toBox2d(1));
-			movement.sub(new Vector2(currentVelocity.x, 0));
 			
-			if(!grounded) {
-				movement.scl(0.1f);
+			// Our desired magnitude every step is the current velocity magnitude plus an acceleration factor.
+			float desiredMagnitude = 0;
+			
+			// OH GOD THE HACKS, DEAR GOD NOOOOO!!!  Basically... if we're on the ground... turning should be sharp.
+			// If in the air, we want to "step" towards the direction.
+			if(grounded) {
+				desiredMagnitude = Math.min(Math.abs(currentVelocity.x) + 0.8f, GameWorld.toBox2d(maxVelocity));
+			}
+			else {
+				if(movingLeft) {
+					desiredMagnitude = -1.0f * Math.max(currentVelocity.x - 0.8f, GameWorld.toBox2d(maxVelocity) * -0.8f);
+				}
+				else if(movingRight) {
+					desiredMagnitude = Math.min(currentVelocity.x + 0.8f, GameWorld.toBox2d(maxVelocity) * 0.8f);
+				}
 			}
 			
+			// Scale our movement vector (which already has direction) with the desired magnitude calculated above. 
+			movement.scl(desiredMagnitude);
+			
+			// Subtract our current velocity from the vector (which caps us at maximum velocity rather than maxVelocity + currentVelocity)
+			movement.sub(new Vector2(currentVelocity.x, 0));
+			
+			// Apply movement impulse to body.
 			body.applyLinearImpulse(movement, body.getWorldCenter(), true);
 		}
 		
 		// Handle Jumping		
-		if(jumping && canJumpAgain && jumpCounter++ < maxJumps) {
+		if(jumping && canJumpAgain && ((jumpCounter < maxJumps) || leftWallTouching || rightWallTouching)) {
 			Vector2 force = new Vector2(0, 0);
 			force.x = body.getLinearVelocity().x;
-			force.y = (float)Math.sqrt(-2 * box2dworld.getGravity().y / 2 * GameWorld.toBox2d(300f));
+			force.y = (float)Math.sqrt(-2 * box2dworld.getGravity().y * GameWorld.toBox2d(300f));
+			
+			if(!grounded) {
+				// Add horizontal velocity if wall jumping.  Character should jump away from wall.
+				Vector2 wallJumpForce = new Vector2(0, 0);
+				
+				if(leftWallTouching) {
+					wallJumpForce.x = 1;
+				}
+				else if(rightWallTouching) {
+					wallJumpForce.x = -1;
+				}
+				
+				wallJumpForce.scl(maxVelocity * 0.025f);
+				
+				force.add(wallJumpForce);
+			}
 			
 			body.setLinearVelocity(force);
 			canJumpAgain = false;
+			jumpCounter++;
 		} 
 		
 		if(!jumping) {
 			canJumpAgain = true;
+
+			// If they are in the air and not pressing the jump button, we will cut their Y-velocity 
+			// by a multiplier if they are going up.
+			if(!grounded && body.getLinearVelocity().y > 0) {				
+				body.setLinearVelocity(body.getLinearVelocity().x, body.getLinearVelocity().y * 0.75f);
+			}
 		}
 		
 		if(!grounded) {
 			// Set friction to zero if in the air to prevent getting stuck on sides of things.
 			body.getFixtureList().get(0).setFriction(0.0f);
+			
+			if(leftWallTouching) {
+				body.applyLinearImpulse(new Vector2(-0.5f, 0), body.getWorldCenter(), true);
+				body.getFixtureList().get(0).setFriction(1.5f);
+			}
+			else if(rightWallTouching) {
+				body.applyLinearImpulse(new Vector2(0.5f, 0), body.getWorldCenter(), true);
+				body.getFixtureList().get(0).setFriction(1.5f);
+			}
 						
 			// Apply a little extra gravity.
 			body.applyLinearImpulse(new Vector2(0, -0.3f), body.getWorldCenter(), true);
 			
-			// If there are no jumps, take away a jump.  This means they ran off a ledge.
+			// If no jumps have been made, take away a jump.  This means they ran off a ledge.
 			if(jumpCounter == 0) {
 				jumpCounter = 1;
 			}
@@ -172,8 +225,8 @@ public class PlayerInputSystem extends EntityProcessingSystem implements ActionL
 		
 		// Debug Drawing
 		if(GdxGame.LogLevel == Logger.DEBUG) {
-			batch.begin();
-			String text = String.format("Jumps Left: %s", maxJumps - jumpCounter);
+			batch.begin();						
+			String text = String.format("");
 			font.draw(batch, text, GameWorld.toWorld(body.getPosition().x) - font.getBounds(text).width / 2, GameWorld.toWorld(body.getPosition().y) + 48);
 			batch.end();
 		}
@@ -201,19 +254,43 @@ public class PlayerInputSystem extends EntityProcessingSystem implements ActionL
 	ContactListener sensorListener = new ContactListener() {
 		@Override
 		public void beginContact(Contact contact) {
+			if(		(contact.getFixtureA().getUserData() != null && contact.getFixtureA().getUserData().equals(1)) ||
+					(contact.getFixtureB().getUserData() != null && contact.getFixtureB().getUserData().equals(1))
+			) {
+				leftWallTouching = true;
+			}
+			
+			if(		(contact.getFixtureA().getUserData() != null && contact.getFixtureA().getUserData().equals(2)) ||
+					(contact.getFixtureB().getUserData() != null && contact.getFixtureB().getUserData().equals(2))
+			) {
+				grounded = true;
+			}
+			
 			if(		(contact.getFixtureA().getUserData() != null && contact.getFixtureA().getUserData().equals(3)) ||
 					(contact.getFixtureB().getUserData() != null && contact.getFixtureB().getUserData().equals(3))
 			) {
-				grounded = true;
+				rightWallTouching = true;
 			}
 		}
 
 		@Override
 		public void endContact(Contact contact) {
+			if(		(contact.getFixtureA().getUserData() != null && contact.getFixtureA().getUserData().equals(1)) ||
+					(contact.getFixtureB().getUserData() != null && contact.getFixtureB().getUserData().equals(1))
+			) {
+				leftWallTouching = false;
+			}
+			
+			if(		(contact.getFixtureA().getUserData() != null && contact.getFixtureA().getUserData().equals(2)) ||
+					(contact.getFixtureB().getUserData() != null && contact.getFixtureB().getUserData().equals(2))
+			) {
+				grounded = false;
+			}
+			
 			if(		(contact.getFixtureA().getUserData() != null && contact.getFixtureA().getUserData().equals(3)) ||
 					(contact.getFixtureB().getUserData() != null && contact.getFixtureB().getUserData().equals(3))
 			) {
-				grounded = false;
+				rightWallTouching = false;
 			}
 		}
 

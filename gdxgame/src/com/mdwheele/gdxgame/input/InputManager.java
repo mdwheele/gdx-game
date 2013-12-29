@@ -186,10 +186,6 @@ public class InputManager {
 
         boolean valueChanged = !axisValues.containsKey(hash);
         
-        if (applyDelta) {
-            value *= delta;
-        }
-
 		for(Mapping mapping: maps) {
 			for(InputListener listener: mapping.listeners) {
                 if (listener instanceof ActionListener && valueChanged) {
